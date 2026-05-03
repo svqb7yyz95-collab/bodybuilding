@@ -13,7 +13,7 @@
 <style>
 :root{
   --bg:#0d0d0d;--surface:#1c1c1e;--surface2:#2c2c2e;
-  --accent:#ff6b35;--text:#fff;--text2:#aeaeb2;--text3:#636366;
+  --accent:#00ff00;--text:#fff;--text2:#d0d0d0;--text3:#808080;
   --success:#30d158;--warn:#ffd60a;--danger:#ff453a;
   --border:#38383a;--r:12px;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
@@ -120,7 +120,7 @@ select.input{
 .w-dur{font-size:13px;color:var(--text3);font-variant-numeric:tabular-nums}
 .w-day-badge{
   font-size:12px;font-weight:700;color:var(--accent);
-  background:#ff6b3520;padding:3px 10px;border-radius:20px;
+  background:#00ff0020;padding:3px 10px;border-radius:20px;
 }
 
 /* REST TIMER */
@@ -200,7 +200,7 @@ canvas{display:block;width:100%}
   transition:opacity .15s,transform .1s;border:1.5px solid transparent;
 }
 .day-start-card:active{opacity:.75;transform:scale(.98)}
-.day-start-card.has-ex{border-color:#ff6b3530}
+.day-start-card.has-ex{border-color:#00ff0030}
 .day-start-name{font-size:17px;font-weight:700}
 .day-start-exs{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.4}
 .day-start-arrow{color:var(--text3);flex-shrink:0}
@@ -273,9 +273,9 @@ canvas{display:block;width:100%}
 
 const CATS = ['Rinta','Selkä','Olkapäät','Hauis','Ojentaja','Jalat','Pakara','Vatsa','Cardio','Muu'];
 const CAT_CLR = {
-  Rinta:'#ff6b6b',Selkä:'#4ecdc4',Olkapäät:'#45b7d1',
-  Hauis:'#f9ca24',Ojentaja:'#f0932b',Jalat:'#6ab04c',
-  Pakara:'#a8e063',Vatsa:'#a29bfe',Cardio:'#fd79a8',Muu:'#636366'
+  Rinta:'#00ff00',Selkä:'#00ee00',Olkapäät:'#00dd00',
+  Hauis:'#00ff33',Ojentaja:'#00ff66',Jalat:'#00ff99',
+  Pakara:'#00ffcc',Vatsa:'#00dd00',Cardio:'#00ff00',Muu:'#808080'
 };
 const DAY_NAMES = ['A','B','C','D','E','F'];
 
@@ -1096,7 +1096,7 @@ function drawCal(id) {
     const has=wd.has(k), isTod=dago===0;
     const x=lpad+w*cs+1, y=tpad+d*cs+1, sz=cs-2;
     rr(ctx,x,y,sz,sz,Math.min(4,sz/3));
-    ctx.fillStyle=has?'#ff6b35dd':'#252527'; ctx.fill();
+    ctx.fillStyle=has?'#00ff00dd':'#252527'; ctx.fill();
     if (isTod) { rr(ctx,x,y,sz,sz,Math.min(4,sz/3)); ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5; ctx.stroke(); }
   }
 
@@ -1159,8 +1159,8 @@ function drawScatter(id, data) {
   data.forEach(d=>{
     const x=p.l+cW*(d.w/maxW), y=p.t+cH*(1-d.r/maxR);
     ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2);
-    ctx.fillStyle='#ff6b35'; ctx.fill();
-    ctx.strokeStyle='#ff950088'; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle='#00ff00'; ctx.fill();
+    ctx.strokeStyle='#00dd0088'; ctx.lineWidth=2; ctx.stroke();
   });
 }
 
@@ -1178,8 +1178,8 @@ function drawCharts() {
         grid:{left:40,right:20,top:10,bottom:30},
         xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11}},
         yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#ff6b35'},smooth:true}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#ff6b35',textStyle:{color:'#fff'}},
+        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#00ff00'},smooth:true}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#00ff00',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1209,7 +1209,7 @@ function drawCharts() {
           itemStyle:{borderColor:'#0d0d0d',borderWidth:2},
           label:{fontSize:11,color:'#fff'}
         }],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#ff6b35',textStyle:{color:'#fff'}},
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#00ff00',textStyle:{color:'#fff'}},
         color:colors,
         animation:true
       });
@@ -1234,8 +1234,8 @@ function drawCharts() {
         grid:{left:40,right:20,top:10,bottom:30},
         xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11}},
         yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#45b7d1'}}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#45b7d1',textStyle:{color:'#fff'}},
+        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#00ff00'}}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#00ff00',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1475,11 +1475,11 @@ function render() {
               data: hist.map(d => d.vol),
               type: 'line',
               smooth: true,
-              itemStyle: {color: '#ff6b35'},
+              itemStyle: {color: '#00ff00'},
               areaStyle: {color: 'rgba(255, 107, 53, 0.3)'},
               lineStyle: {width: 2}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff6b35', textStyle: {color: '#fff'}},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#00ff00', textStyle: {color: '#fff'}},
             animation: true
           });
           chart.resize();
@@ -1505,10 +1505,10 @@ function render() {
               data: allSets,
               type: 'scatter',
               symbolSize: 8,
-              itemStyle: {color: '#ff6b35', opacity: 0.8},
-              emphasis: {itemStyle: {color: '#ff9500', borderColor: '#fff', borderWidth: 2}}
+              itemStyle: {color: '#00ff00', opacity: 0.8},
+              emphasis: {itemStyle: {color: '#00dd00', borderColor: '#fff', borderWidth: 2}}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff6b35', textStyle: {color: '#fff'}, formatter: '{c}'},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#00ff00', textStyle: {color: '#fff'}, formatter: '{c}'},
             animation: true
           });
           chart.resize();
@@ -1568,9 +1568,9 @@ function init() {
     const cx=ic.getContext('2d');
     cx.fillStyle='#0d0d0d'; cx.fillRect(0,0,192,192);
     // Draw dumbbell icon
-    cx.strokeStyle='#ff6b35'; cx.lineWidth=8; cx.lineCap='round';
+    cx.strokeStyle='#00ff00'; cx.lineWidth=8; cx.lineCap='round';
     // Left weight
-    cx.fillStyle='#ff6b35'; cx.fillRect(30,75,30,42); cx.fillRect(30,70,30,6);
+    cx.fillStyle='#00ff00'; cx.fillRect(30,75,30,42); cx.fillRect(30,70,30,6);
     // Bar
     cx.beginPath(); cx.moveTo(65,96); cx.lineTo(127,96); cx.stroke();
     // Right weight
