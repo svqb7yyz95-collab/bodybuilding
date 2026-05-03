@@ -12,11 +12,12 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
 :root{
-  --bg:#000000;--surface:#1a1a1a;--surface2:#2d2d2d;
+  --bg:#000000;--surface:#0f0f15;--surface2:#1a1a25;
   --accent:#d4af37;--text:#fff;--text2:#e0e0e0;--text3:#909090;
-  --success:#30d158;--warn:#ffd60a;--danger:#ff453a;
+  --success:#2d5016;--warn:#d4af37;--danger:#E81B23;
   --border:#2d2d2d;--r:12px;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+  --sapphire:#0f4c81;--emerald:#2d5016;--amethyst:#663399;--ruby:#E81B23;--rosegold:#B76E79;--teal:#008080;--silver:#c0c0c0;--copper:#b87333;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{height:100%;overflow:hidden}
@@ -67,11 +68,12 @@ body{
 
 /* INPUTS */
 .input{
-  background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;
+  background:var(--surface2);border:2px solid var(--border);border-radius:10px;
   padding:12px 14px;font-size:16px;color:var(--text);
-  outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none;
+  outline:none;width:100%;transition:border-color .3s,box-shadow .3s;-webkit-appearance:none;
+  box-shadow:0 0 0 0 rgba(212,175,55,0);
 }
-.input:focus{border-color:var(--accent)}
+.input:focus{border-color:var(--accent);box-shadow:0 0 12px rgba(212,175,55,0.5)}
 input[type=number].input{-moz-appearance:textfield}
 input[type=number].input::-webkit-outer-spin-button,
 input[type=number].input::-webkit-inner-spin-button{-webkit-appearance:none}
@@ -273,9 +275,9 @@ canvas{display:block;width:100%}
 
 const CATS = ['Rinta','Selkä','Olkapäät','Hauis','Ojentaja','Jalat','Pakara','Vatsa','Cardio','Muu'];
 const CAT_CLR = {
-  Rinta:'#ffffff',Selkä:'#e8e8e8',Olkapäät:'#d0d0d0',
-  Hauis:'#b8b8b8',Ojentaja:'#a0a0a0',Jalat:'#909090',
-  Pakara:'#808080',Vatsa:'#d0d0d0',Cardio:'#ffffff',Muu:'#686868'
+  Rinta:'#E81B23',Selkä:'#0f4c81',Olkapäät:'#2d5016',
+  Hauis:'#663399',Ojentaja:'#d4af37',Jalat:'#B76E79',
+  Pakara:'#008080',Vatsa:'#0f4c81',Cardio:'#E81B23',Muu:'#909090'
 };
 const DAY_NAMES = ['A','B','C','D','E','F'];
 
@@ -570,7 +572,7 @@ function vWorkoutIdle() {
             <div class="day-start-name">${esc(day.name)}</div>
             <div class="day-start-exs">${
               hasEx
-                ? exs.map(e=>`<span>${esc(e.name)}</span>`).join(' &middot; ')
+                ? exs.map(e=>`<span style="color:${CAT_CLR[e.cat]||'#909090'}">${esc(e.name)}</span>`).join(' &middot; ')
                 : 'Ei harjoitteita — lisää Ohjelma-välilehdeltä'
             }</div>
           </div>
@@ -657,12 +659,14 @@ function exCard(ex) {
 
   const dw = draft.weight !== undefined ? draft.weight : (lastSetToday?.weight ?? refSetLastWorkout?.weight ?? '');
   const dr = ''; // Always empty - user enters reps fresh
+  const clr = CAT_CLR[ex.cat]||'#909090';
   return `
     <div class="ex-card fade-in" style="${isDone?'opacity:.5;':''}" ${isDone?'data-done=1':''}>
       <div class="ex-head">
         <div style="flex:1;min-width:0">
           <div class="ex-name" style="${isDone?'color:var(--text3);text-decoration:line-through;':''}">${esc(ex.name)}</div>
         </div>
+        ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}20;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>` : ''}
         ${!isDone ? `
           <button class="btn btn-success btn-sm" style="font-size:11px;flex-shrink:0" onclick="markExDone('${ex.id}')">✓ Valmis</button>` : ''}
       </div>
@@ -775,6 +779,7 @@ function vProgram() {
         <div class="list-wrap fade-in">
           ${exs.map((ex,i) => {
             const isRenaming = S.renamingEx === ex.id;
+            const clr = CAT_CLR[ex.cat]||'#909090';
             return `
               <div class="list-item">
                 ${S.editMode ? `
@@ -782,6 +787,7 @@ function vProgram() {
                     <button class="order-btn" onclick="moveExInDay('${ex.id}',-1,${di})" ${i===0?'disabled':''}>▲</button>
                     <button class="order-btn" onclick="moveExInDay('${ex.id}',1,${di})" ${i===exs.length-1?'disabled':''}>▼</button>
                   </div>` : ''}
+                ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}22;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>` : ''}
                 ${isRenaming ? `
                   <input type="text" id="rename-${ex.id}" class="input" style="flex:1;font-size:14px;padding:6px 10px"
                     value="${esc(ex.name)}" maxlength="40" autofocus
@@ -927,6 +933,7 @@ function vExercises() {
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
             <div style="flex:1">
               <div style="font-size:18px;font-weight:700">${esc(sel.name)}</div>
+              ${sel.cat !== 'Muu' ? `<span class="badge" style="background:${CAT_CLR[sel.cat]}22;color:${CAT_CLR[sel.cat]};margin-top:6px">${esc(sel.cat)}</span>` : ''}
             </div>
           </div>
           ${(() => {
@@ -1088,7 +1095,7 @@ function drawCal(id) {
     const has=wd.has(k), isTod=dago===0;
     const x=lpad+w*cs+1, y=tpad+d*cs+1, sz=cs-2;
     rr(ctx,x,y,sz,sz,Math.min(4,sz/3));
-    ctx.fillStyle=has?'#e8e8e8dd':'#2d2d2d'; ctx.fill();
+    ctx.fillStyle=has?'#d4af37dd':'#2d2d2d'; ctx.fill();
     if (isTod) { rr(ctx,x,y,sz,sz,Math.min(4,sz/3)); ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5; ctx.stroke(); }
   }
 
@@ -1170,8 +1177,8 @@ function drawCharts() {
         grid:{left:40,right:20,top:10,bottom:30},
         xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11}},
         yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#e8e8e8'},smooth:true}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#e8e8e8',textStyle:{color:'#fff'}},
+        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#0f4c81'},smooth:true}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#0f4c81',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1198,7 +1205,7 @@ function drawCharts() {
           type:'pie',
           radius:['20%','70%'],
           data:pieData,
-          itemStyle:{borderColor:'#0d0d0d',borderWidth:2},
+          itemStyle:{borderColor:'#000000',borderWidth:2},
           label:{fontSize:11,color:'#fff'}
         }],
         tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#e8e8e8',textStyle:{color:'#fff'}},
@@ -1226,8 +1233,8 @@ function drawCharts() {
         grid:{left:40,right:20,top:10,bottom:30},
         xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11}},
         yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#e8e8e8'}}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#e8e8e8',textStyle:{color:'#fff'}},
+        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#2d5016'}}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#2d5016',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1467,11 +1474,11 @@ function render() {
               data: hist.map(d => d.vol),
               type: 'line',
               smooth: true,
-              itemStyle: {color: '#e8e8e8'},
-              areaStyle: {color: 'rgba(255, 107, 53, 0.3)'},
-              lineStyle: {width: 2}
+              itemStyle: {color: '#663399'},
+              areaStyle: {color: 'rgba(102, 51, 153, 0.3)'},
+              lineStyle: {width: 2, color: '#663399'}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#e8e8e8', textStyle: {color: '#fff'}},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#663399', textStyle: {color: '#fff'}},
             animation: true
           });
           chart.resize();
@@ -1497,10 +1504,10 @@ function render() {
               data: allSets,
               type: 'scatter',
               symbolSize: 8,
-              itemStyle: {color: '#e8e8e8', opacity: 0.8},
-              emphasis: {itemStyle: {color: '#d0d0d0', borderColor: '#fff', borderWidth: 2}}
+              itemStyle: {color: '#E81B23', opacity: 0.8},
+              emphasis: {itemStyle: {color: '#ff4444', borderColor: '#fff', borderWidth: 2}}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#e8e8e8', textStyle: {color: '#fff'}, formatter: '{c}'},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#E81B23', textStyle: {color: '#fff'}, formatter: '{c}'},
             animation: true
           });
           chart.resize();
