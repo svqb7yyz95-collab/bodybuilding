@@ -291,6 +291,7 @@ const S = {
   statsEx: null,
   histOpen: null,
   renamingEx: null,     // exId being renamed in program view
+  editingWorkout: null, // workout id being edited in history
   doneExs: new Set(),   // exerciseIds marked done in current workout
 };
 
@@ -586,16 +587,38 @@ function vWorkoutIdle() {
       const open = S.histOpen === w.id;
       const dayName = DB.program.days.find(d=>d.id===w.dayId)?.name || '';
       const isLatest = idx === 0;
+      const isEditing = S.editingWorkout === w.id;
       return `
         <div class="hist-item" style="${isLatest?'margin:0 16px 12px;':'margin:0 16px 12px;'}">
-          <div class="hist-head" ${!isLatest?`onclick="toggleHist('${w.id}')"`:''} style="${isLatest?'cursor:default;':''}" ${isLatest?'style="pointer-events:none;"':''}>
-            <div>
+          <div class="hist-head" ${!isLatest&&!isEditing?`onclick="toggleHist('${w.id}')"`:''} style="${isLatest?'cursor:default;':''}" ${isLatest&&!isEditing?'style="pointer-events:none;"':''}>
+            <div style="flex:1">
               <div class="hist-date">${fmtDate(w.date)}${dayName?` <span style="color:var(--accent);font-size:13px;font-weight:600">${esc(dayName)}</span>`:''}</div>
               <div class="hist-meta">${w.dur} min · ${vol.toLocaleString('fi')} kg · ${exIds.length} harjoitetta</div>
             </div>
-            ${!isLatest ? `<svg class="hist-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#636366" stroke-width="2" stroke-linecap="round" style="transform:rotate(${open?90:0}deg)"><path d="M9 6l6 6-6 6"/></svg>` : ''}
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button class="icon-btn" style="background:#ffffff15;color:var(--text2)" onclick="startEditWorkout('${w.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              ${!isLatest && !isEditing ? `<svg class="hist-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#636366" stroke-width="2" stroke-linecap="round" style="transform:rotate(${open?90:0}deg)"><path d="M9 6l6 6-6 6"/></svg>` : ''}
+            </div>
           </div>
-          ${isLatest || open ? `
+          ${isEditing ? `
+            <div style="padding:12px 16px;background:#ffffff05;border-top:1px solid #252527">
+              <div style="display:flex;gap:10px;margin-bottom:10px">
+                <div style="flex:1">
+                  <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600">Pvm</div>
+                  <input type="date" id="edit-date-${w.id}" class="input" value="${new Date(w.date).toISOString().split('T')[0]}" style="font-size:14px">
+                </div>
+                <div style="flex:0 0 80px">
+                  <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600">Kesto (min)</div>
+                  <input type="number" id="edit-dur-${w.id}" class="input" value="${w.dur}" min="1" style="font-size:14px">
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary btn-sm" style="flex:1;font-size:13px" onclick="saveWorkoutEdit('${w.id}')">Tallenna</button>
+                <button class="btn btn-secondary btn-sm" onclick="cancelEditWorkout()">Peruuta</button>
+              </div>
+            </div>` : isLatest || open ? `
             <div class="hist-body">
               ${exIds.map(id => {
                 const ex=getEx(id);
@@ -816,7 +839,7 @@ function vProgram() {
           <div style="font-size:15px;font-weight:600;margin-bottom:12px">Lisää harjoite — ${day ? esc(day.name) : ''}</div>
           <select id="ex-select" class="input" style="margin-bottom:14px" autofocus>
             <option value="">Valitse harjoite...</option>
-            ${DB.exercises.filter(e => !day?.exerciseIds.includes(e.id)).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}
+            ${DB.exercises.filter(e => !day?.exerciseIds.includes(e.id)).sort((a,b) => a.name.localeCompare(b.name)).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}
           </select>
           <div style="display:flex;gap:8px">
             <button class="btn btn-primary" style="flex:1" onclick="submitExFromLibrary(${di})">Lisää</button>
@@ -895,7 +918,7 @@ function vExercises() {
     ${exs.length ? `
       <div style="padding:16px">
         <select class="input" onchange="selExerciseDetail(this.value)" style="font-size:18px;padding:16px 14px;margin-bottom:0">
-          ${exs.map(e => `<option value="${e.id}" ${e.id === selId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}
+          ${exs.sort((a,b) => a.name.localeCompare(b.name)).map(e => `<option value="${e.id}" ${e.id === selId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}
         </select>
       </div>` : ''}
     ${S.addExForm ? `
@@ -1218,6 +1241,33 @@ function selExerciseDetail(id) { S.statsEx=id; render(); setTimeout(() => {
   }
 }, 100); }
 
+function startEditWorkout(wId) {
+  S.editingWorkout = wId;
+  render();
+  setTimeout(() => {
+    const el = document.getElementById(`edit-date-${wId}`);
+    if (el) el.focus();
+  }, 50);
+}
+
+function cancelEditWorkout() {
+  S.editingWorkout = null;
+  render();
+}
+
+function saveWorkoutEdit(wId) {
+  const newDate = document.getElementById(`edit-date-${wId}`)?.value;
+  const newDur = document.getElementById(`edit-dur-${wId}`)?.value;
+  if (!newDate || !newDur || +newDur < 1) return;
+  const w = DB.workouts.find(wo => wo.id === wId);
+  if (!w) return;
+  w.date = new Date(newDate).getTime();
+  w.dur = +newDur;
+  dbSave();
+  S.editingWorkout = null;
+  render();
+}
+
 function openAddExercise() {
   S.addExForm = true; render();
   setTimeout(() => document.getElementById('ex-lib-name')?.focus(), 80);
@@ -1364,10 +1414,14 @@ function init() {
     const ic=document.createElement('canvas'); ic.width=ic.height=192;
     const cx=ic.getContext('2d');
     cx.fillStyle='#0d0d0d'; cx.fillRect(0,0,192,192);
-    const g=cx.createLinearGradient(20,20,172,172);
-    g.addColorStop(0,'#ff6b35'); g.addColorStop(1,'#ff9500');
-    cx.fillStyle=g; cx.font='bold 100px -apple-system';
-    cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText('KB',96,96);
+    // Draw dumbbell icon
+    cx.strokeStyle='#ff6b35'; cx.lineWidth=8; cx.lineCap='round';
+    // Left weight
+    cx.fillStyle='#ff6b35'; cx.fillRect(30,75,30,42); cx.fillRect(30,70,30,6);
+    // Bar
+    cx.beginPath(); cx.moveTo(65,96); cx.lineTo(127,96); cx.stroke();
+    // Right weight
+    cx.fillRect(132,75,30,42); cx.fillRect(132,70,30,6);
     const li=document.createElement('link'); li.rel='apple-touch-icon'; li.href=ic.toDataURL();
     document.head.appendChild(li);
     const m={name:'Kehonrakennus',short_name:'Treeni',start_url:'./',display:'standalone',
