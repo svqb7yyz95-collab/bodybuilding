@@ -256,12 +256,11 @@ canvas{display:block;width:100%}
       </svg>
       Tilastot
     </button>
-    <button class="tab" data-view="history" onclick="nav('history')">
+    <button class="tab" data-view="exercises" onclick="nav('exercises')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 7v5l3.5 2"/>
+        <path d="M12 5v14M5 12h14M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20z"/>
       </svg>
-      Historia
+      Liikkeet
     </button>
   </nav>
 </div>
@@ -447,10 +446,12 @@ function endWorkout(save) {
   S.workout = null; S.drafts = {}; S.addSetFor = null; wSave(); render();
 }
 
-function logSet(exId, weight, reps) {
+function logSet(exId, weight, reps, comment = '') {
   if (!S.workout) return;
-  S.workout.sets.push({ exerciseId: exId, weight: +weight, reps: +reps, ts: Date.now() });
-  S.drafts[exId] = { weight, reps };
+  const set = { exerciseId: exId, weight: +weight, reps: +reps, ts: Date.now() };
+  if (comment) set.comment = comment;
+  S.workout.sets.push(set);
+  S.drafts[exId] = { weight, reps: '', comment: '' }; // Keep weight, clear reps and comment for next set
   S.addSetFor = null; wSave(); render();
 }
 
@@ -554,15 +555,13 @@ function vWorkoutIdle() {
       <div class="empty-txt">Luo ensin ohjelma<br>Ohjelma-välilehdeltä</div>
     </div>`;
 
-  const last = DB.workouts[0];
-  const lastDay = last ? DB.program.days.find(d=>d.id===last.dayId) : null;
+  const ws = DB.workouts;
 
   return `
     <div class="view-hd"><h1>Treeni</h1></div>
     <div class="sec-lbl">Valitse päivä</div>
     ${days.map(day => {
       const exs = day.exerciseIds.map(id=>getEx(id)).filter(Boolean);
-      const cats = [...new Set(exs.map(e=>e.cat))];
       const hasEx = exs.length > 0;
       return `
         <div class="day-start-card ${hasEx?'has-ex':''}" onclick="${hasEx?`confirmStartWorkout('${day.id}')`:''}" style="${!hasEx?'cursor:default;opacity:.5':''}">
@@ -577,22 +576,38 @@ function vWorkoutIdle() {
           ${hasEx ? `<svg class="day-start-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>` : ''}
         </div>`;
     }).join('')}
-    ${last ? `
-      <div class="sec-lbl">Edellinen treeni</div>
-      <div class="card fade-in">
-        <div style="font-size:13px;color:var(--text3);margin-bottom:10px">
-          ${fmtDate(last.date)} · ${last.dur} min${lastDay?` · <span style="color:var(--accent);font-weight:600">${esc(lastDay.name)}</span>`:''}
-        </div>
-        ${[...new Set(last.sets.map(s=>s.exerciseId))].map(id => {
-          const ex=getEx(id); if (!ex) return '';
-          const ss=last.sets.filter(s=>s.exerciseId===id);
-          const vol=Math.round(ss.reduce((a,s)=>a+s.weight*s.reps,0));
-          return `<div style="display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid #252527;font-size:14px">
-            <span>${esc(ex.name)}</span>
-            <span style="color:var(--text3)">${ss.length}×&nbsp;<span style="color:var(--text2)">${vol}&thinsp;kg</span></span>
-          </div>`;
-        }).join('')}
-      </div>` : ''}
+
+    <div class="sec-lbl" style="margin-top:20px">Treenihistoria</div>
+    ${ws.length === 0 ? `
+      <div style="padding:20px 16px;text-align:center;color:var(--text3);font-size:14px">Ei vielä treenejä</div>
+    ` : ws.map((w,idx) => {
+      const vol = Math.round(w.sets.reduce((a,s)=>a+s.weight*s.reps,0));
+      const exIds = [...new Set(w.sets.map(s=>s.exerciseId))];
+      const open = S.histOpen === w.id;
+      const dayName = DB.program.days.find(d=>d.id===w.dayId)?.name || '';
+      const isLatest = idx === 0;
+      return `
+        <div class="hist-item" style="${isLatest?'margin:0 16px 12px;':'margin:0 16px 12px;'}">
+          <div class="hist-head" ${!isLatest?`onclick="toggleHist('${w.id}')"`:''} style="${isLatest?'cursor:default;':''}" ${isLatest?'style="pointer-events:none;"':''}>
+            <div>
+              <div class="hist-date">${fmtDate(w.date)}${dayName?` <span style="color:var(--accent);font-size:13px;font-weight:600">${esc(dayName)}</span>`:''}</div>
+              <div class="hist-meta">${w.dur} min · ${vol.toLocaleString('fi')} kg · ${exIds.length} harjoitetta</div>
+            </div>
+            ${!isLatest ? `<svg class="hist-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#636366" stroke-width="2" stroke-linecap="round" style="transform:rotate(${open?90:0}deg)"><path d="M9 6l6 6-6 6"/></svg>` : ''}
+          </div>
+          ${isLatest || open ? `
+            <div class="hist-body">
+              ${exIds.map(id => {
+                const ex=getEx(id);
+                const ss=w.sets.filter(s=>s.exerciseId===id);
+                const exVol=Math.round(ss.reduce((a,s)=>a+s.weight*s.reps,0));
+                return `
+                  <div class="hist-ex-title">${ex?esc(ex.name):'(poistettu)'}&nbsp;<span style="color:var(--text3);font-weight:400">${exVol} kg</span></div>
+                  ${ss.map((s,i)=>`<div class="hist-set">Sarja ${i+1}: ${fmt(s.weight)} kg × ${s.reps} toistoa${s.comment ? ` · ${esc(s.comment)}` : ''}</div>`).join('')}`;
+              }).join('')}
+            </div>` : ''}
+        </div>`;
+    }).join('')}
     <div style="height:20px"></div>`;
 }
 
@@ -634,13 +649,13 @@ function exCard(ex) {
   const draft = S.drafts[ex.id] || {};
   const isDone = S.doneExs.has(ex.id);
 
-  // Pre-fill: weight from last set added TODAY, reps from same-index set in last workout
+  // Pre-fill: weight from last set added TODAY, reps ALWAYS empty
   const nextIdx = sets.length;
   const lastSetToday = sets[sets.length - 1];
   const refSetLastWorkout = lastSets[nextIdx] ?? lastSets[lastSets.length - 1];
 
   const dw = draft.weight !== undefined ? draft.weight : (lastSetToday?.weight ?? refSetLastWorkout?.weight ?? '');
-  const dr = draft.reps   !== undefined ? draft.reps   : (refSetLastWorkout?.reps ?? '');
+  const dr = ''; // Always empty - user enters reps fresh
   const clr = CAT_CLR[ex.cat]||'#636366';
 
   return `
@@ -649,7 +664,7 @@ function exCard(ex) {
         <div style="flex:1;min-width:0">
           <div class="ex-name" style="${isDone?'color:var(--text3);text-decoration:line-through;':''}">${esc(ex.name)}</div>
         </div>
-        <span class="badge" style="background:${clr}20;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>
+        ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}20;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>` : ''}
         ${!isDone ? `
           <button class="btn btn-success btn-sm" style="font-size:11px;flex-shrink:0" onclick="markExDone('${ex.id}')">✓ Valmis</button>` : ''}
       </div>
@@ -668,24 +683,15 @@ function exCard(ex) {
       ${sets.length ? `
         <div class="sets-list">
           <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.7px;font-weight:600;padding:6px 0 4px;border-top:1px solid #252527">Tänään</div>
-          ${(() => {
-            const grouped = {};
-            sets.forEach((s,i) => {
-              const key = fmt(s.weight);
-              if (!grouped[key]) grouped[key] = {reps:[], indices:[]};
-              grouped[key].reps.push(s.reps);
-              grouped[key].indices.push(i);
-            });
-            return Object.entries(grouped).map(([weight, data]) => {
-              const repStr = [...new Set(data.reps)].length === 1 ? data.reps[0] : data.reps.join('/');
-              return `
-                <div class="set-row">
-                  <span class="set-num">${data.indices.length}</span>
-                  <span class="set-info">${data.indices.length}&thinsp;×&thinsp;${repStr}&thinsp;×&thinsp;${weight}&thinsp;kg</span>
-                  <button class="set-del" style="width:24px;padding:0" onclick="delSet(${data.indices[data.indices.length-1]})" title="Poista viimeisin">✕</button>
-                </div>`;
-            }).join('');
-          })()}
+          ${sets.map((s,li) => `
+            <div class="set-row">
+              <span class="set-num">${li+1}</span>
+              <div style="flex:1">
+                <div class="set-info">${fmt(s.weight)}&thinsp;kg &times; ${s.reps}&thinsp;toistoa</div>
+                ${s.comment ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(s.comment)}</div>` : ''}
+              </div>
+              <button class="set-del" onclick="delSet(${s.idx})">✕</button>
+            </div>`).join('')}
         </div>` : ''}
 
       ${isAdding ? `
@@ -710,6 +716,13 @@ function exCard(ex) {
                   style="font-size:24px;font-weight:700;text-align:center;padding:10px 6px"
                   oninput="draftChange('${ex.id}','reps',this.value)">
               </div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div class="form-lbl">Kommentti (valinnainen)</div>
+              <input type="text" id="c-${ex.id}" class="input"
+                placeholder="Esim. RPE 8, loukkaantunut jne" maxlength="50"
+                style="font-size:13px;padding:8px 10px"
+                oninput="draftChange('${ex.id}','comment',this.value)">
             </div>
             <div style="display:flex;gap:8px">
               <button class="btn btn-primary" style="flex:1" onclick="submitSet('${ex.id}')">✓ Kirjaa</button>
@@ -772,7 +785,7 @@ function vProgram() {
                     <button class="order-btn" onclick="moveExInDay('${ex.id}',-1,${di})" ${i===0?'disabled':''}>▲</button>
                     <button class="order-btn" onclick="moveExInDay('${ex.id}',1,${di})" ${i===exs.length-1?'disabled':''}>▼</button>
                   </div>` : ''}
-                <span class="badge" style="background:${clr}22;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>
+                ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}22;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>` : ''}
                 ${isRenaming ? `
                   <input type="text" id="rename-${ex.id}" class="input" style="flex:1;font-size:14px;padding:6px 10px"
                     value="${esc(ex.name)}" maxlength="40" autofocus
@@ -800,10 +813,13 @@ function vProgram() {
 
       ${S.addExForm ? `
         <div class="card fade-in">
-          <div style="font-size:15px;font-weight:600;margin-bottom:12px">Uusi harjoite — ${day ? esc(day.name) : ''}</div>
-          <input type="text" id="ex-name" class="input" placeholder="Esim. Penkkipunnerrus" maxlength="40" style="margin-bottom:14px" autofocus>
+          <div style="font-size:15px;font-weight:600;margin-bottom:12px">Lisää harjoite — ${day ? esc(day.name) : ''}</div>
+          <select id="ex-select" class="input" style="margin-bottom:14px" autofocus>
+            <option value="">Valitse harjoite...</option>
+            ${DB.exercises.filter(e => !day?.exerciseIds.includes(e.id)).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}
+          </select>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-primary" style="flex:1" onclick="submitEx(${di})">Lisää</button>
+            <button class="btn btn-primary" style="flex:1" onclick="submitExFromLibrary(${di})">Lisää</button>
             <button class="btn btn-secondary" onclick="toggleAddEx()">Peruuta</button>
           </div>
         </div>` : `
@@ -820,20 +836,21 @@ function vProgram() {
 // ─── VIEW: STATS ──────────────────────────────────────────────────────────────
 
 function vStats() {
-  const exs = DB.exercises;
-  if (!exs.length || !DB.workouts.length) return `
+  if (!DB.workouts.length) return `
     <div class="view-hd"><h1>Tilastot</h1></div>
     <div class="empty">
       <div class="empty-ico">📊</div>
       <div class="empty-txt">Treenaa ensin,<br>tilastot ilmestyvät tähän!</div>
     </div>`;
 
-  const selId = S.statsEx || exs[0].id;
-  const sel = getEx(selId);
-  const prs = getPRs(selId);
-  const vd = volHistory(selId);
   const wv = weeklyVol();
   const totalVol = Math.round(DB.workouts.reduce((a,w)=>a+w.sets.reduce((b,s)=>b+s.weight*s.reps,0),0));
+  const totalDur = DB.workouts.reduce((a,w)=>a+w.dur,0);
+  const avgDur = Math.round(totalDur / DB.workouts.length);
+  const avgVol = Math.round(totalVol / DB.workouts.length);
+  const firstWorkout = DB.workouts[DB.workouts.length-1]?.date || Date.now();
+  const daysSinceStart = Math.max(1, Math.floor((Date.now() - firstWorkout) / (1000*60*60*24)));
+  const workoutsPerWeek = (DB.workouts.length * 7 / daysSinceStart).toFixed(1);
 
   return `
     <div class="view-hd"><h1>Tilastot</h1></div>
@@ -847,27 +864,13 @@ function vStats() {
         <div style="font-size:11px;color:var(--text3);margin-top:2px">volyymi yhteensä</div>
       </div>
     </div>
-    <div style="padding:0 16px 12px">
-      <select class="input" onchange="selStatsEx(this.value)">
-        ${exs.map(e=>`<option value="${e.id}" ${e.id===selId?'selected':''}>${esc(e.name)}</option>`).join('')}
-      </select>
+    <div class="stat-card">
+      <div class="stat-title">Treenisessiot</div>
+      <div class="pr-row"><span class="pr-lbl">Keskimääräinen kesto</span><span class="pr-val">${avgDur} min</span></div>
+      <div class="pr-row"><span class="pr-lbl">Yhteensä treeniä</span><span class="pr-val">${Math.floor(totalDur/60)}h ${totalDur%60}min</span></div>
+      <div class="pr-row"><span class="pr-lbl">Treenejä viikossa (keskiarvo)</span><span class="pr-val">${workoutsPerWeek}</span></div>
+      <div class="pr-row"><span class="pr-lbl">Keskimääräinen volyymi</span><span class="pr-val">${(avgVol/1000).toFixed(1)}t</span></div>
     </div>
-    ${vd.length>=2 ? `
-      <div class="stat-card">
-        <div class="stat-title">Volyymi — ${esc(sel?.name||'')}</div>
-        <canvas id="vc" height="220"></canvas>
-      </div>` : `
-      <div class="stat-card">
-        <div class="stat-title">Volyymi — ${esc(sel?.name||'')}</div>
-        <div style="color:var(--text3);font-size:13px;text-align:center;padding:20px 0">Tarvitaan vähintään 2 treenikertaa</div>
-      </div>`}
-    ${prs.bw>0 ? `
-      <div class="stat-card">
-        <div class="stat-title">Ennätykset — ${esc(sel?.name||'')}</div>
-        <div class="pr-row"><span class="pr-lbl">Paras paino</span><span class="pr-val">${fmt(prs.bw)} kg</span></div>
-        <div class="pr-row"><span class="pr-lbl">Toistoja parhaalla painolla</span><span class="pr-val">${prs.brAtBw} kpl</span></div>
-        <div class="pr-row"><span class="pr-lbl">Arvioitu 1RM</span><span class="pr-val">~${prs.b1rm} kg</span></div>
-      </div>` : ''}
     ${wv.length>=2 ? `
       <div class="stat-card">
         <div class="stat-title">Viikkovolyymi (kg)</div>
@@ -880,43 +883,98 @@ function vStats() {
     <div style="height:20px"></div>`;
 }
 
-// ─── VIEW: HISTORY ────────────────────────────────────────────────────────────
+// ─── VIEW: EXERCISES ──────────────────────────────────────────────────────────
 
-function vHistory() {
-  const ws = DB.workouts;
-  if (!ws.length) return `
-    <div class="view-hd"><h1>Historia</h1></div>
-    <div class="empty"><div class="empty-ico">📅</div><div class="empty-txt">Ei vielä tallennettuja treenejä</div></div>`;
+function vExercises() {
+  const exs = DB.exercises;
+  const selId = S.statsEx || (exs.length > 0 ? exs[0].id : null);
+  const sel = getEx(selId);
 
   return `
-    <div class="view-hd"><h1>Historia</h1></div>
-    ${ws.map(w => {
-      const vol = Math.round(w.sets.reduce((a,s)=>a+s.weight*s.reps,0));
-      const exIds = [...new Set(w.sets.map(s=>s.exerciseId))];
-      const open = S.histOpen === w.id;
-      const dayName = DB.program.days.find(d=>d.id===w.dayId)?.name || '';
-      return `
-        <div class="hist-item">
-          <div class="hist-head" onclick="toggleHist('${w.id}')">
-            <div>
-              <div class="hist-date">${fmtDate(w.date)}${dayName?` <span style="color:var(--accent);font-size:13px;font-weight:600">${esc(dayName)}</span>`:''}</div>
-              <div class="hist-meta">${w.dur} min · ${vol.toLocaleString('fi')} kg · ${exIds.length} harjoitetta</div>
+    <div class="view-hd"><h1>Liikkeet</h1></div>
+    ${exs.length ? `
+      <div style="padding:16px">
+        <select class="input" onchange="selExerciseDetail(this.value)" style="font-size:18px;padding:16px 14px;margin-bottom:0">
+          ${exs.map(e => `<option value="${e.id}" ${e.id === selId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}
+        </select>
+      </div>` : ''}
+    ${S.addExForm ? `
+      <div class="card fade-in" style="margin:0 16px 12px">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Luo uusi harjoite</div>
+        <input type="text" id="ex-lib-name" class="input" placeholder="Esim. Penkkipunnerrus" maxlength="40" style="margin-bottom:14px" autofocus>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="submitExerciseLib()">Luo</button>
+          <button class="btn btn-secondary" onclick="toggleAddExercise()">Peruuta</button>
+        </div>
+      </div>` : `
+      <div style="padding:0 16px 14px">
+        <button class="btn btn-secondary btn-full" onclick="openAddExercise()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Luo harjoite
+        </button>
+      </div>`}
+    ${!exs.length ? `
+      <div class="empty">
+        <div class="empty-ico">➕</div>
+        <div class="empty-txt">Luo ensimmäinen harjoite</div>
+      </div>` : sel ? `
+      <div class="fade-in">
+        <div class="card" style="margin:0 16px 12px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <div style="flex:1">
+              <div style="font-size:18px;font-weight:700">${esc(sel.name)}</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:3px">
+                ${sel.cat !== 'Muu' ? `<span style="background:${CAT_CLR[sel.cat]}22;color:${CAT_CLR[sel.cat]};padding:3px 8px;border-radius:4px">${esc(sel.cat)}</span>` : 'Kategoria: Muu'}
+              </div>
             </div>
-            <svg class="hist-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#636366" stroke-width="2" stroke-linecap="round" style="transform:rotate(${open?90:0}deg)"><path d="M9 6l6 6-6 6"/></svg>
           </div>
-          ${open ? `
-            <div class="hist-body">
-              ${exIds.map(id => {
-                const ex=getEx(id);
-                const ss=w.sets.filter(s=>s.exerciseId===id);
-                const exVol=Math.round(ss.reduce((a,s)=>a+s.weight*s.reps,0));
-                return `
-                  <div class="hist-ex-title">${ex?esc(ex.name):'(poistettu)'}&nbsp;<span style="color:var(--text3);font-weight:400">${exVol} kg</span></div>
-                  ${ss.map((s,i)=>`<div class="hist-set">Sarja ${i+1}: ${fmt(s.weight)} kg × ${s.reps} toistoa</div>`).join('')}`;
-              }).join('')}
-            </div>` : ''}
-        </div>`;
-    }).join('')}
+          ${(() => {
+            const prs = getPRs(sel.id);
+            const hist = volHistory(sel.id);
+            const wo = DB.workouts.filter(w => w.sets.some(s => s.exerciseId === sel.id));
+            return `
+              <div style="border-top:1px solid #252527;padding-top:12px">
+                <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Tilastot</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                  <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Paras paino</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent)">${prs.bw > 0 ? fmt(prs.bw) + ' kg' : '—'}</div>
+                  </div>
+                  <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">1RM arvio</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent)">${prs.b1rm > 0 ? '~' + prs.b1rm + ' kg' : '—'}</div>
+                  </div>
+                  <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Toistot (paras paino)</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent)">${prs.brAtBw > 0 ? prs.brAtBw + ' kpl' : '—'}</div>
+                  </div>
+                  <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Harjoituskertoja</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent)">${wo.length}</div>
+                  </div>
+                </div>
+              </div>
+              ${hist.length >= 2 ? `
+                <div style="border-top:1px solid #252527;padding-top:12px;margin-top:12px">
+                  <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Volyymi-historia (kg)</div>
+                  <canvas id="ex-chart" height="200"></canvas>
+                </div>` : ''}
+            `;
+          })()}
+        </div>
+        <div class="card" style="margin:0 16px 12px">
+          <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Muokkaa nimeä</div>
+          <input type="text" id="ex-edit-name" class="input" value="${esc(sel.name)}" maxlength="40" placeholder="Harjoitteen nimi" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')saveExerciseEdits('${sel.id}')">
+          <button class="btn btn-secondary btn-sm btn-full" onclick="saveExerciseEdits('${sel.id}')">Tallenna</button>
+        </div>
+        <div class="card" style="margin:0 16px 12px;background:#ff453a08;border:1px solid #ff453a33">
+          <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Vaara-alue</div>
+          <button class="btn btn-danger btn-sm btn-full" onclick="askDeleteExercise('${sel.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v5M14 11v5M9 6V4h6v2"/></svg>
+            Poista harjoite
+          </button>
+        </div>
+      </div>` : ''}
     <div style="height:20px"></div>`;
 }
 
@@ -940,19 +998,19 @@ function setupCanvas(id) {
 
 function drawLine(id, data, color) {
   const cv=setupCanvas(id); if (!cv) return;
-  const {ctx,W,H}=cv, p={t:16,r:16,b:34,l:54};
+  const {ctx,W,H}=cv, p={t:4,r:4,b:20,l:38};
   const cW=W-p.l-p.r, cH=H-p.t-p.b;
   const max=Math.max(...data.map(d=>d.vol))*1.12||1;
   ctx.strokeStyle='#252527'; ctx.lineWidth=1;
   for (let i=0;i<=3;i++) {
     const y=p.t+cH*(1-i/3);
     ctx.beginPath(); ctx.moveTo(p.l,y); ctx.lineTo(p.l+cW,y); ctx.stroke();
-    ctx.fillStyle='#636366'; ctx.font='10px -apple-system';
+    ctx.fillStyle='#636366'; ctx.font='8px -apple-system';
     ctx.textAlign='right'; ctx.textBaseline='middle';
-    ctx.fillText(Math.round((i/3)*max), p.l-6, y);
+    ctx.fillText(Math.round((i/3)*max), p.l-4, y);
   }
-  ctx.textBaseline='top'; ctx.textAlign='center'; ctx.fillStyle='#636366';
-  data.forEach((d,i)=>ctx.fillText(d.lbl, p.l+(i/(data.length-1))*cW, H-p.b+6));
+  ctx.textBaseline='top'; ctx.textAlign='center'; ctx.fillStyle='#636366'; ctx.font='7px -apple-system';
+  data.forEach((d,i)=>ctx.fillText(d.lbl, p.l+(i/(data.length-1))*cW, H-p.b+2));
   const pts=data.map((d,i)=>({x:p.l+(i/(data.length-1))*cW, y:p.t+cH*(1-d.vol/max)}));
   const grad=ctx.createLinearGradient(0,p.t,0,p.t+cH);
   grad.addColorStop(0,color+'55'); grad.addColorStop(1,color+'00');
@@ -1031,10 +1089,7 @@ function drawCal(id) {
 
 function drawCharts() {
   if (S.view!=='stats') return;
-  const exId=S.statsEx||(DB.exercises[0]?.id); if (!exId) return;
-  const ex=getEx(exId), clr=CAT_CLR[ex?.cat]||'#ff6b35';
-  const vd=volHistory(exId), wv=weeklyVol();
-  if (vd.length>=2) drawLine('vc', vd, clr);
+  const wv=weeklyVol();
   if (wv.length>=2) drawBars('wc', wv, '#ff6b35');
   drawCal('cc');
 }
@@ -1078,6 +1133,17 @@ function submitEx(dayIdx) {
   const name=document.getElementById('ex-name')?.value?.trim();
   if (!name) { document.getElementById('ex-name')?.focus(); return; }
   addExToDay(name, 'Muu', dayIdx); S.addExForm=false; render();
+}
+
+function submitExFromLibrary(dayIdx) {
+  const exId = document.getElementById('ex-select')?.value?.trim();
+  if (!exId) { document.getElementById('ex-select')?.focus(); return; }
+  const day = DB.program.days[dayIdx];
+  if (day && !day.exerciseIds.includes(exId)) {
+    day.exerciseIds.push(exId);
+    dbSave();
+  }
+  S.addExForm = false; render();
 }
 
 function askRemoveExFromDay(exId, dayIdx) {
@@ -1130,8 +1196,9 @@ function draftChange(exId, field, val) {
 function submitSet(exId) {
   const w=document.getElementById(`w-${exId}`)?.value;
   const r=document.getElementById(`r-${exId}`)?.value;
+  const c=document.getElementById(`c-${exId}`)?.value?.trim() || '';
   if (!w||!r||+w<0||+r<1) return;
-  logSet(exId, +w, +r);
+  logSet(exId, +w, +r, c);
   if (navigator.vibrate) navigator.vibrate(30);
 }
 
@@ -1144,15 +1211,108 @@ function askEndWorkout() {
 
 function toggleHist(id) { S.histOpen=S.histOpen===id?null:id; render(); }
 function selStatsEx(id) { S.statsEx=id; render(); requestAnimationFrame(drawCharts); }
+function selExerciseDetail(id) { S.statsEx=id; render(); setTimeout(() => {
+  if (S.view === 'exercises') {
+    const hist = volHistory(id, 12);
+    if (hist.length >= 2) drawLine('ex-chart', hist, '#ff6b35');
+  }
+}, 100); }
+
+function openAddExercise() {
+  S.addExForm = true; render();
+  setTimeout(() => document.getElementById('ex-lib-name')?.focus(), 80);
+}
+
+function toggleAddExercise() {
+  S.addExForm = !S.addExForm; render();
+  if (S.addExForm) setTimeout(() => document.getElementById('ex-lib-name')?.focus(), 80);
+}
+
+function submitExerciseLib() {
+  const name = document.getElementById('ex-lib-name')?.value?.trim();
+  if (!name) { document.getElementById('ex-lib-name')?.focus(); return; }
+  const ex = { id: uid(), name, cat: 'Muu' };
+  DB.exercises.push(ex);
+  dbSave();
+  S.addExForm = false;
+  render();
+}
+
+function startRenameEx(exId) {
+  S.renamingEx = exId;
+  render();
+  setTimeout(() => {
+    const el = document.getElementById(`rename-${exId}`);
+    if (el) { el.focus(); el.select(); }
+  }, 50);
+}
+
+function submitRenameEx(exId) {
+  const newName = document.getElementById(`rename-${exId}`)?.value?.trim();
+  const ex = getEx(exId);
+  if (!newName || !ex) { S.renamingEx = null; render(); return; }
+  if (newName === ex.name) { S.renamingEx = null; render(); return; }
+  ex.name = newName;
+  dbSave();
+  S.renamingEx = null;
+  render();
+}
+
+function askDeleteExercise(exId) {
+  const ex = getEx(exId);
+  if (!ex) return;
+  const workoutCount = DB.workouts.filter(w => w.sets.some(s => s.exerciseId === exId)).length;
+  const programCount = DB.program.days.filter(d => d.exerciseIds.includes(exId)).length;
+
+  let msg = `Poistetaanko "${ex.name}"?`;
+  if (workoutCount > 0 || programCount > 0) {
+    const parts = [];
+    if (programCount > 0) parts.push(`ohjelmassa ${programCount}x`);
+    if (workoutCount > 0) parts.push(`historiassa ${workoutCount}x`);
+    msg += ` (${parts.join(', ')})`;
+  }
+
+  showModal('Poista harjoite', msg,
+    () => deleteExercise(exId), 'Poista', 'Peruuta', true);
+}
+
+function deleteExercise(exId) {
+  // Remove from all program days
+  DB.program.days.forEach(day => {
+    day.exerciseIds = day.exerciseIds.filter(id => id !== exId);
+  });
+  // Remove from exercises list
+  DB.exercises = DB.exercises.filter(e => e.id !== exId);
+  S.statsEx = null;
+  dbSave();
+  render();
+}
+
+function saveExerciseEdits(exId) {
+  const name = document.getElementById('ex-edit-name')?.value?.trim();
+  if (!name) return;
+  const ex = getEx(exId);
+  if (!ex) return;
+  ex.name = name;
+  dbSave();
+  render();
+}
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 
 function render() {
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.view===S.view));
   const c=document.getElementById('content');
-  c.innerHTML=({workout:vWorkout,program:vProgram,stats:vStats,history:vHistory}[S.view]||vWorkout)();
+  c.innerHTML=({workout:vWorkout,program:vProgram,stats:vStats,exercises:vExercises}[S.view]||vWorkout)();
   c.scrollTop=0;
   if (S.view==='stats') requestAnimationFrame(drawCharts);
+  if (S.view==='exercises') requestAnimationFrame(() => {
+    const exId = S.statsEx || (DB.exercises[0]?.id);
+    if (exId) {
+      const hist = volHistory(exId, 12);
+      if (hist.length >= 2) drawLine('ex-chart', hist, '#ff6b35');
+    }
+  });
 }
 
 // ─── LIVE TIMER ───────────────────────────────────────────────────────────────
@@ -1175,7 +1335,10 @@ function tick() {
 document.addEventListener('keydown', e=>{
   if (e.key==='Enter') {
     if (S.addSetFor) submitSet(S.addSetFor);
-    else if (S.addExForm) { const di=Math.min(S.progDayIdx,DB.program.days.length-1); submitEx(di); }
+    else if (S.addExForm) {
+      if (S.view === 'exercises') submitExerciseLib();
+      else { const di=Math.min(S.progDayIdx,DB.program.days.length-1); submitExFromLibrary(di); }
+    }
   }
   if (e.key==='Escape') {
     if (S.addSetFor) cancelAdd();
