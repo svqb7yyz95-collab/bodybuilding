@@ -875,7 +875,7 @@ function vStats() {
     ${wv.length>=2 ? `
       <div class="stat-card">
         <div class="stat-title">Viikkovolyymi (kg)</div>
-        <canvas id="wc" height="200"></canvas>
+        <div id="wc" style="height:200px"></div>
       </div>` : ''}
     <div class="stat-card">
       <div class="stat-title">Treenipäivät (13 viikkoa)</div>
@@ -883,11 +883,11 @@ function vStats() {
     </div>
     <div class="stat-card">
       <div class="stat-title">Harjoiteittainen volyymi</div>
-      <canvas id="pie-chart" height="280"></canvas>
+      <div id="pie-chart" style="height:280px"></div>
     </div>
     <div class="stat-card">
       <div class="stat-title">Volyymi viikonpäivittäin</div>
-      <canvas id="dow-chart" height="200"></canvas>
+      <div id="dow-chart" style="height:200px"></div>
     </div>
     <div style="height:20px"></div>`;
 }
@@ -966,7 +966,7 @@ function vExercises() {
               ${hist.length >= 2 ? `
                 <div style="border-top:1px solid #252527;padding-top:12px;margin-top:12px">
                   <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Volyymi-historia (kg)</div>
-                  <canvas id="ex-chart" height="260"></canvas>
+                  <div id="ex-chart" style="height:260px"></div>
                 </div>` : ''}
               ${(() => {
                 const allSets = [];
@@ -978,7 +978,7 @@ function vExercises() {
                 return allSets.length >= 3 ? `
                   <div style="border-top:1px solid #252527;padding-top:12px;margin-top:12px">
                     <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Paino vs Toistot</div>
-                    <canvas id="scatter-${sel.id}" height="240"></canvas>
+                    <div id="scatter-${sel.id}" style="height:240px"></div>
                   </div>` : '';
               })()}
             `;
@@ -1170,16 +1170,20 @@ function drawCharts() {
 
   // Weekly volume chart
   if(wv.length>=2) {
-    const chart=echarts.init(document.getElementById('wc'));
-    chart.setOption({
-      responsive:true,
-      grid:{left:40,right:20,top:10,bottom:30},
-      xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11}},
-      yAxis:{type:'value',axisLabel:{fontSize:11}},
-      series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#ff6b35'},smooth:true}],
-      tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#ff6b35',textStyle:{color:'#fff'}},
-      animation:true
-    });
+    const el=document.getElementById('wc');
+    if(el) {
+      const chart=echarts.init(el);
+      chart.setOption({
+        responsive:true,
+        grid:{left:40,right:20,top:10,bottom:30},
+        xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11}},
+        yAxis:{type:'value',axisLabel:{fontSize:11}},
+        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#ff6b35'},smooth:true}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#ff6b35',textStyle:{color:'#fff'}},
+        animation:true
+      });
+      setTimeout(()=>chart.resize(),0);
+    }
   }
 
   // Exercise pie chart
@@ -1191,22 +1195,26 @@ function drawCharts() {
   });
   const pieData=Object.entries(exBreak).map(([k,v])=>({name:k,value:Math.round(v)})).sort((a,b)=>b.value-a.value);
   if(pieData.length>0) {
-    const chart=echarts.init(document.getElementById('pie-chart'));
-    const colors=Object.values(CAT_CLR);
-    chart.setOption({
-      responsive:true,
-      series:[{
-        name:'Volyymi',
-        type:'pie',
-        radius:['20%','70%'],
-        data:pieData,
-        itemStyle:{borderColor:'#0d0d0d',borderWidth:2},
-        label:{fontSize:11,color:'#fff'}
-      }],
-      tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#ff6b35',textStyle:{color:'#fff'}},
-      color:colors,
-      animation:true
-    });
+    const el=document.getElementById('pie-chart');
+    if(el) {
+      const chart=echarts.init(el);
+      const colors=Object.values(CAT_CLR);
+      chart.setOption({
+        responsive:true,
+        series:[{
+          name:'Volyymi',
+          type:'pie',
+          radius:['20%','70%'],
+          data:pieData,
+          itemStyle:{borderColor:'#0d0d0d',borderWidth:2},
+          label:{fontSize:11,color:'#fff'}
+        }],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#ff6b35',textStyle:{color:'#fff'}},
+        color:colors,
+        animation:true
+      });
+      setTimeout(()=>chart.resize(),0);
+    }
   }
 
   // Day of week
@@ -1218,17 +1226,24 @@ function drawCharts() {
   });
   const dowData=['Ma','Ti','Ke','To','Pe','La','Su'].map(d=>({name:d,value:Math.round(dowVol[d]||0)}));
   if(dowData.some(d=>d.value>0)) {
-    const chart=echarts.init(document.getElementById('dow-chart'));
-    chart.setOption({
-      responsive:true,
-      grid:{left:40,right:20,top:10,bottom:30},
-      xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11}},
-      yAxis:{type:'value',axisLabel:{fontSize:11}},
-      series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#45b7d1'}}],
-      tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#45b7d1',textStyle:{color:'#fff'}},
-      animation:true
-    });
+    const el=document.getElementById('dow-chart');
+    if(el) {
+      const chart=echarts.init(el);
+      chart.setOption({
+        responsive:true,
+        grid:{left:40,right:20,top:10,bottom:30},
+        xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11}},
+        yAxis:{type:'value',axisLabel:{fontSize:11}},
+        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#45b7d1'}}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#45b7d1',textStyle:{color:'#fff'}},
+        animation:true
+      });
+      setTimeout(()=>chart.resize(),0);
+    }
   }
+
+  // Calendar heatmap
+  drawCal('cc');
 }
 
 // ─── MODAL ────────────────────────────────────────────────────────────────────
@@ -1348,12 +1363,7 @@ function askEndWorkout() {
 
 function toggleHist(id) { S.histOpen=S.histOpen===id?null:id; render(); }
 function selStatsEx(id) { S.statsEx=id; render(); requestAnimationFrame(drawCharts); }
-function selExerciseDetail(id) { S.statsEx=id; render(); setTimeout(() => {
-  if (S.view === 'exercises') {
-    const hist = volHistory(id, 12);
-    if (hist.length >= 2) drawLine('ex-chart', hist, '#ff6b35');
-  }
-}, 100); }
+function selExerciseDetail(id) { S.statsEx=id; render(); }
 
 function openAddExercise() {
   S.addExForm = true; render();
@@ -1448,28 +1458,32 @@ function render() {
   if (oldView !== S.view) c.scrollTop=0;
   else c.scrollTop=scrollPos;
   if (S.view==='stats') requestAnimationFrame(drawCharts);
-  if (S.view==='exercises') requestAnimationFrame(() => {
+  if (S.view==='exercises') setTimeout(() => {
     const exId = S.statsEx || (DB.exercises[0]?.id);
     if (exId) {
       const hist = volHistory(exId, 12);
       if (hist.length >= 2) {
-        const chart = echarts.init(document.getElementById('ex-chart'));
-        chart.setOption({
-          responsive: true,
-          grid: {left: 40, right: 20, top: 10, bottom: 30},
-          xAxis: {type: 'category', data: hist.map(d => d.lbl), axisLabel: {fontSize: 11}},
-          yAxis: {type: 'value', axisLabel: {fontSize: 11}},
-          series: [{
-            data: hist.map(d => d.vol),
-            type: 'line',
-            smooth: true,
-            itemStyle: {color: '#ff6b35'},
-            areaStyle: {color: 'rgba(255, 107, 53, 0.3)'},
-            lineStyle: {width: 2}
-          }],
-          tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff6b35', textStyle: {color: '#fff'}},
-          animation: true
-        });
+        const el = document.getElementById('ex-chart');
+        if (el) {
+          const chart = echarts.init(el);
+          chart.setOption({
+            responsive: true,
+            grid: {left: 40, right: 20, top: 10, bottom: 30},
+            xAxis: {type: 'category', data: hist.map(d => d.lbl), axisLabel: {fontSize: 11}},
+            yAxis: {type: 'value', axisLabel: {fontSize: 11}},
+            series: [{
+              data: hist.map(d => d.vol),
+              type: 'line',
+              smooth: true,
+              itemStyle: {color: '#ff6b35'},
+              areaStyle: {color: 'rgba(255, 107, 53, 0.3)'},
+              lineStyle: {width: 2}
+            }],
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff6b35', textStyle: {color: '#fff'}},
+            animation: true
+          });
+          chart.resize();
+        }
       }
       // Scatter plot
       const allSets = [];
@@ -1479,25 +1493,29 @@ function render() {
         });
       });
       if (allSets.length >= 3) {
-        const chart = echarts.init(document.getElementById(`scatter-${exId}`));
-        chart.setOption({
-          responsive: true,
-          grid: {left: 40, right: 20, top: 10, bottom: 30},
-          xAxis: {type: 'value', name: 'Paino (kg)', nameTextStyle: {fontSize: 11}, axisLabel: {fontSize: 11}},
-          yAxis: {type: 'value', name: 'Toistot', nameTextStyle: {fontSize: 11}, axisLabel: {fontSize: 11}},
-          series: [{
-            data: allSets,
-            type: 'scatter',
-            symbolSize: 8,
-            itemStyle: {color: '#ff6b35', opacity: 0.8},
-            emphasis: {itemStyle: {color: '#ff9500', borderColor: '#fff', borderWidth: 2}}
-          }],
-          tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff6b35', textStyle: {color: '#fff'}, formatter: '{c}'},
-          animation: true
-        });
+        const el = document.getElementById(`scatter-${exId}`);
+        if (el) {
+          const chart = echarts.init(el);
+          chart.setOption({
+            responsive: true,
+            grid: {left: 40, right: 20, top: 10, bottom: 30},
+            xAxis: {type: 'value', name: 'Paino (kg)', nameTextStyle: {fontSize: 11}, axisLabel: {fontSize: 11}},
+            yAxis: {type: 'value', name: 'Toistot', nameTextStyle: {fontSize: 11}, axisLabel: {fontSize: 11}},
+            series: [{
+              data: allSets,
+              type: 'scatter',
+              symbolSize: 8,
+              itemStyle: {color: '#ff6b35', opacity: 0.8},
+              emphasis: {itemStyle: {color: '#ff9500', borderColor: '#fff', borderWidth: 2}}
+            }],
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff6b35', textStyle: {color: '#fff'}, formatter: '{c}'},
+            animation: true
+          });
+          chart.resize();
+        }
       }
     }
-  });
+  }, 50);
 }
 
 // ─── LIVE TIMER ───────────────────────────────────────────────────────────────
