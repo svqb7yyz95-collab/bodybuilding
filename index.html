@@ -169,7 +169,7 @@ select.input{
 .order-btn:active:not(:disabled){opacity:.6}
 
 /* STATS */
-.stat-card{background:var(--surface);border-radius:var(--r);margin:0 16px 12px;padding:16px}
+.stat-card{background:var(--surface);border-radius:var(--r);margin:0 12px 20px;padding:18px}
 .stat-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;font-weight:500}
 canvas{display:block;width:100%}
 .pr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #252527;font-size:14px}
@@ -874,11 +874,19 @@ function vStats() {
     ${wv.length>=2 ? `
       <div class="stat-card">
         <div class="stat-title">Viikkovolyymi (kg)</div>
-        <canvas id="wc" height="120"></canvas>
+        <canvas id="wc" height="200"></canvas>
       </div>` : ''}
     <div class="stat-card">
       <div class="stat-title">Treenipäivät (13 viikkoa)</div>
-      <canvas id="cc" height="160"></canvas>
+      <canvas id="cc" height="240"></canvas>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Harjoiteittainen volyymi</div>
+      <canvas id="pie-chart" height="280"></canvas>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Volyymi viikonpäivittäin</div>
+      <canvas id="dow-chart" height="200"></canvas>
     </div>
     <div style="height:20px"></div>`;
 }
@@ -924,7 +932,7 @@ function vExercises() {
             <div style="flex:1">
               <div style="font-size:18px;font-weight:700">${esc(sel.name)}</div>
               <div style="font-size:12px;color:var(--text3);margin-top:3px">
-                ${sel.cat !== 'Muu' ? `<span style="background:${CAT_CLR[sel.cat]}22;color:${CAT_CLR[sel.cat]};padding:3px 8px;border-radius:4px">${esc(sel.cat)}</span>` : 'Kategoria: Muu'}
+                ${sel.cat !== 'Muu' ? `<span style="background:${CAT_CLR[sel.cat]}22;color:${CAT_CLR[sel.cat]};padding:3px 8px;border-radius:4px">${esc(sel.cat)}</span>` : ''}
               </div>
             </div>
           </div>
@@ -957,8 +965,21 @@ function vExercises() {
               ${hist.length >= 2 ? `
                 <div style="border-top:1px solid #252527;padding-top:12px;margin-top:12px">
                   <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Volyymi-historia (kg)</div>
-                  <canvas id="ex-chart" height="200"></canvas>
+                  <canvas id="ex-chart" height="260"></canvas>
                 </div>` : ''}
+              ${(() => {
+                const allSets = [];
+                DB.workouts.forEach(w => {
+                  w.sets.forEach(s => {
+                    if (s.exerciseId === sel.id) allSets.push({w: s.weight, r: s.reps});
+                  });
+                });
+                return allSets.length >= 3 ? `
+                  <div style="border-top:1px solid #252527;padding-top:12px;margin-top:12px">
+                    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Paino vs Toistot</div>
+                    <canvas id="scatter-${sel.id}" height="240"></canvas>
+                  </div>` : '';
+              })()}
             `;
           })()}
         </div>
@@ -1087,11 +1108,84 @@ function drawCal(id) {
   }
 }
 
+function drawPie(id, data, colors) {
+  const c=document.getElementById(id); if (!c) return;
+  const dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
+  c.width=rect.width*dpr; c.height=c.offsetHeight*dpr;
+  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+  const W=rect.width, H=c.offsetHeight;
+  const cx=W/2, cy=H/2, r=Math.min(W,H)/2-20;
+  const total=data.reduce((a,d)=>a+d.val,0);
+  let angle=0;
+  data.forEach((d,i)=>{
+    const slice=(d.val/total)*Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,angle,angle+slice);
+    ctx.closePath();
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.fill();
+    ctx.strokeStyle='#0d0d0d'; ctx.lineWidth=2; ctx.stroke();
+    // Label
+    const lbl_angle=angle+slice/2;
+    const lx=cx+Math.cos(lbl_angle)*(r*0.7), ly=cy+Math.sin(lbl_angle)*(r*0.7);
+    ctx.fillStyle='#fff'; ctx.font='11px -apple-system'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(Math.round((d.val/total)*100)+'%',lx,ly);
+    angle+=slice;
+  });
+}
+
+function drawScatter(id, data) {
+  const c=document.getElementById(id); if (!c) return;
+  const dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
+  c.width=rect.width*dpr; c.height=c.offsetHeight*dpr;
+  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+  const W=rect.width, H=c.offsetHeight, p={t:20,r:20,b:30,l:40};
+  const cW=W-p.l-p.r, cH=H-p.t-p.b;
+  const maxW=Math.max(...data.map(d=>d.w))*1.1 || 1;
+  const maxR=Math.max(...data.map(d=>d.r))*1.1 || 1;
+  // Grid & labels
+  ctx.strokeStyle='#252527'; ctx.lineWidth=1;
+  for(let i=0;i<=3;i++){
+    const x=p.l+cW*i/3, y=p.t+cH*(1-i/3);
+    ctx.beginPath(); ctx.moveTo(x,p.t); ctx.lineTo(x,p.t+cH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.l,y); ctx.lineTo(p.l+cW,y); ctx.stroke();
+  }
+  ctx.fillStyle='#636366'; ctx.font='8px -apple-system'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let i=0;i<=3;i++) ctx.fillText(Math.round(i/3*maxW), p.l+cW*i/3, H-p.b+2);
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<=3;i++) ctx.fillText(Math.round(i/3*maxR), p.l-4, p.t+cH*(1-i/3));
+  // Points
+  data.forEach(d=>{
+    const x=p.l+cW*(d.w/maxW), y=p.t+cH*(1-d.r/maxR);
+    ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.fillStyle='#ff6b35'; ctx.fill();
+    ctx.strokeStyle='#ff950088'; ctx.lineWidth=2; ctx.stroke();
+  });
+}
+
 function drawCharts() {
   if (S.view!=='stats') return;
   const wv=weeklyVol();
   if (wv.length>=2) drawBars('wc', wv, '#ff6b35');
   drawCal('cc');
+  // Exercise pie chart
+  const exBreak={}; DB.workouts.forEach(w=>{
+    w.sets.forEach(s=>{
+      const ex=getEx(s.exerciseId);
+      if(ex) exBreak[ex.name]=(exBreak[ex.name]||0)+s.weight*s.reps;
+    });
+  });
+  const pieData=Object.entries(exBreak).map(([k,v])=>({lbl:k,val:Math.round(v)})).sort((a,b)=>b.val-a.val);
+  if(pieData.length>0) drawPie('pie-chart', pieData, Object.values(CAT_CLR));
+  // Day of week
+  const dowVol={};
+  DB.workouts.forEach(w=>{
+    const d=new Date(w.date).getDay();
+    const dn=['Su','Ma','Ti','Ke','To','Pe','La'][d];
+    dowVol[dn]=(dowVol[dn]||0)+w.sets.reduce((a,s)=>a+s.weight*s.reps,0);
+  });
+  const dowData=['Ma','Ti','Ke','To','Pe','La','Su'].map(d=>({lbl:d,vol:Math.round(dowVol[d]||0)}));
+  if(dowData.some(d=>d.vol>0)) drawBars('dow-chart',dowData,'#45b7d1');
 }
 
 // ─── MODAL ────────────────────────────────────────────────────────────────────
@@ -1303,14 +1397,27 @@ function saveExerciseEdits(exId) {
 function render() {
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.view===S.view));
   const c=document.getElementById('content');
+  const oldView = S._lastView;
+  S._lastView = S.view;
+  const scrollPos = c.scrollTop;
   c.innerHTML=({workout:vWorkout,program:vProgram,stats:vStats,exercises:vExercises}[S.view]||vWorkout)();
-  c.scrollTop=0;
+  // Only scroll to top when switching views, not when expanding/collapsing items
+  if (oldView !== S.view) c.scrollTop=0;
+  else c.scrollTop=scrollPos;
   if (S.view==='stats') requestAnimationFrame(drawCharts);
   if (S.view==='exercises') requestAnimationFrame(() => {
     const exId = S.statsEx || (DB.exercises[0]?.id);
     if (exId) {
       const hist = volHistory(exId, 12);
       if (hist.length >= 2) drawLine('ex-chart', hist, '#ff6b35');
+      // Scatter plot
+      const allSets = [];
+      DB.workouts.forEach(w => {
+        w.sets.forEach(s => {
+          if (s.exerciseId === exId) allSets.push({w: s.weight, r: s.reps});
+        });
+      });
+      if (allSets.length >= 3) drawScatter(`scatter-${exId}`, allSets);
     }
   });
 }
