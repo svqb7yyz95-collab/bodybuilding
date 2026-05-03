@@ -1285,28 +1285,30 @@ function drawCharts() {
     strengthData.push({lbl: d.toLocaleDateString('fi-FI',{month:'short',day:'numeric'}), vol: Math.round(v)});
   });
   if (strengthData.length >= 2) {
-    const el = document.getElementById('strength-chart');
-    if (el) {
-      const chart = echarts.init(el);
-      chart.setOption({
-        responsive: true,
-        grid: {left: 40, right: 20, top: 10, bottom: 30},
-        xAxis: {type: 'category', data: strengthData.map(d => d.lbl), axisLabel: {fontSize: 11}},
-        yAxis: {type: 'value', axisLabel: {fontSize: 11}},
-        series: [{
-          data: strengthData.map(d => d.vol),
-          type: 'line',
-          smooth: true,
-          itemStyle: {color: '#ffb700'},
-          areaStyle: {color: 'rgba(255, 183, 0, 0.2)'},
-          lineStyle: {width: 2, color: '#ffb700'},
-          emphasis: {itemStyle: {color: '#ffd000'}}
-        }],
-        tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ffb700', textStyle: {color: '#fff'}, formatter: '{c} kg'},
-        animation: true
-      });
-      chart.resize();
-    }
+    setTimeout(() => {
+      const el = document.getElementById('strength-chart');
+      if (el) {
+        const chart = echarts.init(el);
+        chart.setOption({
+          responsive: true,
+          grid: {left: 40, right: 20, top: 10, bottom: 30},
+          xAxis: {type: 'category', data: strengthData.map(d => d.lbl), axisLabel: {fontSize: 11}},
+          yAxis: {type: 'value', axisLabel: {fontSize: 11}},
+          series: [{
+            data: strengthData.map(d => d.vol),
+            type: 'line',
+            smooth: true,
+            itemStyle: {color: '#ffb700'},
+            areaStyle: {color: 'rgba(255, 183, 0, 0.2)'},
+            lineStyle: {width: 2, color: '#ffb700'},
+            emphasis: {itemStyle: {color: '#ffd000'}}
+          }],
+          tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ffb700', textStyle: {color: '#fff'}, formatter: '{c} kg'},
+          animation: true
+        });
+        chart.resize();
+      }
+    }, 50);
   }
 
   // Calendar heatmap
@@ -1588,16 +1590,17 @@ function render() {
         w.sets.forEach(s => {
           if (s.exerciseId === exId) {
             const d = new Date(w.date);
-            const k = d.toISOString().slice(0,10);
+            const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             if (!workoutsByDate[k] || workoutsByDate[k] < s.weight) {
               workoutsByDate[k] = s.weight;
             }
           }
         });
       });
-      Object.entries(workoutsByDate).sort((a,b) => new Date(a[0]) - new Date(b[0])).slice(-20).forEach(([k,v]) => {
-        const d = new Date(k);
-        weightTrendData.push({lbl: d.toLocaleDateString('fi-FI',{month:'short',day:'numeric'}), weight: v});
+      Object.entries(workoutsByDate).sort((a,b) => a[0].localeCompare(b[0])).slice(-20).forEach(([k,v]) => {
+        const parts = k.split('-');
+        const date = new Date(parts[0], parseInt(parts[1])-1, parts[2]);
+        weightTrendData.push({lbl: date.toLocaleDateString('fi-FI',{month:'short',day:'numeric'}), weight: v});
       });
       if (weightTrendData.length >= 2) {
         const el = document.getElementById(`weight-trend-${exId}`);
