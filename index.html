@@ -12,10 +12,10 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
 :root{
-  --bg:#0d0d0d;--surface:#1c1c1e;--surface2:#2c2c2e;
-  --accent:#00ff00;--text:#fff;--text2:#d0d0d0;--text3:#808080;
+  --bg:#000000;--surface:#1a1a1a;--surface2:#2d2d2d;
+  --accent:#e8e8e8;--text:#fff;--text2:#d8d8d8;--text3:#a0a0a0;
   --success:#30d158;--warn:#ffd60a;--danger:#ff453a;
-  --border:#38383a;--r:12px;
+  --border:#2d2d2d;--r:12px;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -30,7 +30,7 @@ body{
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--sat)}
 #content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 #tab-bar{
-  display:flex;background:var(--surface);border-top:1px solid #252527;
+  display:flex;background:var(--surface);border-top:1px solid #2d2d2d;
   padding-bottom:var(--sab);flex-shrink:0;
 }
 .tab{
@@ -100,7 +100,7 @@ select.input{
 
 /* DAY TABS */
 .day-tabs{
-  display:flex;gap:0;border-bottom:1px solid #252527;
+  display:flex;gap:0;border-bottom:1px solid #2d2d2d;
   overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
 }
 .day-tabs::-webkit-scrollbar{display:none}
@@ -120,7 +120,7 @@ select.input{
 .w-dur{font-size:13px;color:var(--text3);font-variant-numeric:tabular-nums}
 .w-day-badge{
   font-size:12px;font-weight:700;color:var(--accent);
-  background:#00ff0020;padding:3px 10px;border-radius:20px;
+  background:#e8e8e820;padding:3px 10px;border-radius:20px;
 }
 
 /* REST TIMER */
@@ -139,7 +139,7 @@ select.input{
 .ex-name{font-size:16px;font-weight:600;flex:1;min-width:0;line-height:1.2}
 .ex-prev{font-size:12px;color:var(--text3);margin-top:3px}
 .sets-list{padding:0 16px 2px}
-.set-row{display:flex;align-items:center;padding:8px 0;border-top:1px solid #252527;font-size:14px;gap:8px}
+.set-row{display:flex;align-items:center;padding:8px 0;border-top:1px solid #2d2d2d;font-size:14px;gap:8px}
 .set-num{color:var(--text3);font-size:11px;width:18px;flex-shrink:0;font-variant-numeric:tabular-nums}
 .set-info{flex:1;font-weight:500}
 .set-del{
@@ -157,7 +157,7 @@ select.input{
 
 /* PROGRAM LIST */
 .list-wrap{margin:0 16px 12px;background:var(--surface);border-radius:var(--r);overflow:hidden}
-.list-item{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid #252527}
+.list-item{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid #2d2d2d}
 .list-item:last-child{border-bottom:none}
 .list-name{flex:1;font-size:15px;font-weight:500;min-width:0}
 .order-btns{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
@@ -173,7 +173,7 @@ select.input{
 .stat-card{background:var(--surface);border-radius:var(--r);margin:0 12px 20px;padding:18px}
 .stat-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;font-weight:500}
 canvas{display:block;width:100%}
-.pr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #252527;font-size:14px}
+.pr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #2d2d2d;font-size:14px}
 .pr-row:last-child{border-bottom:none}
 .pr-lbl{color:var(--text2)}
 .pr-val{font-weight:700;color:var(--accent)}
@@ -200,7 +200,7 @@ canvas{display:block;width:100%}
   transition:opacity .15s,transform .1s;border:1.5px solid transparent;
 }
 .day-start-card:active{opacity:.75;transform:scale(.98)}
-.day-start-card.has-ex{border-color:#00ff0030}
+.day-start-card.has-ex{border-color:#e8e8e830}
 .day-start-name{font-size:17px;font-weight:700}
 .day-start-exs{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.4}
 .day-start-arrow{color:var(--text3);flex-shrink:0}
@@ -273,9 +273,9 @@ canvas{display:block;width:100%}
 
 const CATS = ['Rinta','Selkä','Olkapäät','Hauis','Ojentaja','Jalat','Pakara','Vatsa','Cardio','Muu'];
 const CAT_CLR = {
-  Rinta:'#00ff00',Selkä:'#00ee00',Olkapäät:'#00dd00',
-  Hauis:'#00ff33',Ojentaja:'#00ff66',Jalat:'#00ff99',
-  Pakara:'#00ffcc',Vatsa:'#00dd00',Cardio:'#00ff00',Muu:'#808080'
+  Rinta:'#ffffff',Selkä:'#e8e8e8',Olkapäät:'#d0d0d0',
+  Hauis:'#b8b8b8',Ojentaja:'#a0a0a0',Jalat:'#909090',
+  Pakara:'#808080',Vatsa:'#d0d0d0',Cardio:'#ffffff',Muu:'#686868'
 };
 const DAY_NAMES = ['A','B','C','D','E','F'];
 
@@ -683,7 +683,7 @@ function exCard(ex) {
 
       ${sets.length ? `
         <div class="sets-list">
-          <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.7px;font-weight:600;padding:6px 0 4px;border-top:1px solid #252527">Tänään</div>
+          <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.7px;font-weight:600;padding:6px 0 4px;border-top:1px solid #2d2d2d">Tänään</div>
           ${sets.map((s,li) => `
             <div class="set-row">
               <span class="set-num">${li+1}</span>
@@ -942,7 +942,7 @@ function vExercises() {
             const hist = volHistory(sel.id);
             const wo = DB.workouts.filter(w => w.sets.some(s => s.exerciseId === sel.id));
             return `
-              <div style="border-top:1px solid #252527;padding-top:12px">
+              <div style="border-top:1px solid #2d2d2d;padding-top:12px">
                 <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Tilastot</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
                   <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
@@ -964,7 +964,7 @@ function vExercises() {
                 </div>
               </div>
               ${hist.length >= 2 ? `
-                <div style="border-top:1px solid #252527;padding-top:12px;margin-top:12px">
+                <div style="border-top:1px solid #2d2d2d;padding-top:12px;margin-top:12px">
                   <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Volyymi-historia (kg)</div>
                   <div id="ex-chart" style="height:260px"></div>
                 </div>` : ''}
@@ -976,7 +976,7 @@ function vExercises() {
                   });
                 });
                 return allSets.length >= 3 ? `
-                  <div style="border-top:1px solid #252527;padding-top:12px;margin-top:12px">
+                  <div style="border-top:1px solid #2d2d2d;padding-top:12px;margin-top:12px">
                     <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Paino vs Toistot</div>
                     <div id="scatter-${sel.id}" style="height:240px"></div>
                   </div>` : '';
@@ -1023,7 +1023,7 @@ function drawLine(id, data, color) {
   const {ctx,W,H}=cv, p={t:4,r:4,b:20,l:38};
   const cW=W-p.l-p.r, cH=H-p.t-p.b;
   const max=Math.max(...data.map(d=>d.vol))*1.12||1;
-  ctx.strokeStyle='#252527'; ctx.lineWidth=1;
+  ctx.strokeStyle='#2d2d2d'; ctx.lineWidth=1;
   for (let i=0;i<=3;i++) {
     const y=p.t+cH*(1-i/3);
     ctx.beginPath(); ctx.moveTo(p.l,y); ctx.lineTo(p.l+cW,y); ctx.stroke();
@@ -1055,7 +1055,7 @@ function drawBars(id, data, color) {
   const cW=W-p.l-p.r, cH=H-p.t-p.b;
   const max=Math.max(...data.map(d=>d.vol))*1.15||1;
   const bw=(cW/data.length)*0.65, gap=(cW/data.length)*0.35;
-  ctx.strokeStyle='#252527'; ctx.lineWidth=1;
+  ctx.strokeStyle='#2d2d2d'; ctx.lineWidth=1;
   ctx.fillStyle='#636366'; ctx.font='10px -apple-system';
   ctx.textAlign='right'; ctx.textBaseline='middle';
   for (let i=0;i<=2;i++) {
@@ -1096,7 +1096,7 @@ function drawCal(id) {
     const has=wd.has(k), isTod=dago===0;
     const x=lpad+w*cs+1, y=tpad+d*cs+1, sz=cs-2;
     rr(ctx,x,y,sz,sz,Math.min(4,sz/3));
-    ctx.fillStyle=has?'#00ff00dd':'#252527'; ctx.fill();
+    ctx.fillStyle=has?'#e8e8e8dd':'#2d2d2d'; ctx.fill();
     if (isTod) { rr(ctx,x,y,sz,sz,Math.min(4,sz/3)); ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5; ctx.stroke(); }
   }
 
@@ -1145,7 +1145,7 @@ function drawScatter(id, data) {
   const maxW=Math.max(...data.map(d=>d.w))*1.1 || 1;
   const maxR=Math.max(...data.map(d=>d.r))*1.1 || 1;
   // Grid & labels
-  ctx.strokeStyle='#252527'; ctx.lineWidth=1;
+  ctx.strokeStyle='#2d2d2d'; ctx.lineWidth=1;
   for(let i=0;i<=3;i++){
     const x=p.l+cW*i/3, y=p.t+cH*(1-i/3);
     ctx.beginPath(); ctx.moveTo(x,p.t); ctx.lineTo(x,p.t+cH); ctx.stroke();
@@ -1159,8 +1159,8 @@ function drawScatter(id, data) {
   data.forEach(d=>{
     const x=p.l+cW*(d.w/maxW), y=p.t+cH*(1-d.r/maxR);
     ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2);
-    ctx.fillStyle='#00ff00'; ctx.fill();
-    ctx.strokeStyle='#00dd0088'; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle='#e8e8e8'; ctx.fill();
+    ctx.strokeStyle='#d0d0d088'; ctx.lineWidth=2; ctx.stroke();
   });
 }
 
@@ -1178,8 +1178,8 @@ function drawCharts() {
         grid:{left:40,right:20,top:10,bottom:30},
         xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11}},
         yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#00ff00'},smooth:true}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#00ff00',textStyle:{color:'#fff'}},
+        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#e8e8e8'},smooth:true}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#e8e8e8',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1209,7 +1209,7 @@ function drawCharts() {
           itemStyle:{borderColor:'#0d0d0d',borderWidth:2},
           label:{fontSize:11,color:'#fff'}
         }],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#00ff00',textStyle:{color:'#fff'}},
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#e8e8e8',textStyle:{color:'#fff'}},
         color:colors,
         animation:true
       });
@@ -1234,8 +1234,8 @@ function drawCharts() {
         grid:{left:40,right:20,top:10,bottom:30},
         xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11}},
         yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#00ff00'}}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#00ff00',textStyle:{color:'#fff'}},
+        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#e8e8e8'}}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#e8e8e8',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1475,11 +1475,11 @@ function render() {
               data: hist.map(d => d.vol),
               type: 'line',
               smooth: true,
-              itemStyle: {color: '#00ff00'},
+              itemStyle: {color: '#e8e8e8'},
               areaStyle: {color: 'rgba(255, 107, 53, 0.3)'},
               lineStyle: {width: 2}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#00ff00', textStyle: {color: '#fff'}},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#e8e8e8', textStyle: {color: '#fff'}},
             animation: true
           });
           chart.resize();
@@ -1505,10 +1505,10 @@ function render() {
               data: allSets,
               type: 'scatter',
               symbolSize: 8,
-              itemStyle: {color: '#00ff00', opacity: 0.8},
-              emphasis: {itemStyle: {color: '#00dd00', borderColor: '#fff', borderWidth: 2}}
+              itemStyle: {color: '#e8e8e8', opacity: 0.8},
+              emphasis: {itemStyle: {color: '#d0d0d0', borderColor: '#fff', borderWidth: 2}}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#00ff00', textStyle: {color: '#fff'}, formatter: '{c}'},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#e8e8e8', textStyle: {color: '#fff'}, formatter: '{c}'},
             animation: true
           });
           chart.resize();
@@ -1568,9 +1568,9 @@ function init() {
     const cx=ic.getContext('2d');
     cx.fillStyle='#0d0d0d'; cx.fillRect(0,0,192,192);
     // Draw dumbbell icon
-    cx.strokeStyle='#00ff00'; cx.lineWidth=8; cx.lineCap='round';
+    cx.strokeStyle='#e8e8e8'; cx.lineWidth=8; cx.lineCap='round';
     // Left weight
-    cx.fillStyle='#00ff00'; cx.fillRect(30,75,30,42); cx.fillRect(30,70,30,6);
+    cx.fillStyle='#e8e8e8'; cx.fillRect(30,75,30,42); cx.fillRect(30,70,30,6);
     // Bar
     cx.beginPath(); cx.moveTo(65,96); cx.lineTo(127,96); cx.stroke();
     // Right weight
