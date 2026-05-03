@@ -12,10 +12,10 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
 :root{
-  --bg:#0a0e27;--surface:#141829;--surface2:#1f2438;
-  --accent:#00d4ff;--text:#fff;--text2:#e0e0e0;--text3:#909090;
-  --success:#00ff41;--warn:#ffb700;--danger:#ff3333;
-  --border:#2d3a4f;--r:12px;
+  --bg:#0a0a0a;--surface:#1a1a1a;--surface2:#252525;
+  --accent:#FF6B35;--text:#fff;--text2:#e0e0e0;--text3:#909090;
+  --success:#4CAF50;--warn:#FFB700;--danger:#FF5252;
+  --border:#333333;--r:12px;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -171,9 +171,9 @@ select.input{
 .order-btn:active:not(:disabled){opacity:.6}
 
 /* STATS */
-.stat-card{background:var(--surface);border-radius:var(--r);margin:0 12px 20px;padding:18px}
+.stat-card{background:var(--surface);border-radius:var(--r);margin:0 12px 20px;padding:18px;overflow:visible}
 .stat-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;font-weight:500}
-canvas{display:block;width:100%}
+canvas{display:block;width:100%;height:auto}
 .pr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #2d2d2d;font-size:14px}
 .pr-row:last-child{border-bottom:none}
 .pr-lbl{color:var(--text2)}
@@ -274,9 +274,9 @@ canvas{display:block;width:100%}
 
 const CATS = ['Rinta','Selkä','Olkapäät','Hauis','Ojentaja','Jalat','Pakara','Vatsa','Cardio','Muu'];
 const CAT_CLR = {
-  Rinta:'#ff3333',Selkä:'#00d4ff',Olkapäät:'#00ff41',
-  Hauis:'#ff6b9d',Ojentaja:'#00d4ff',Jalat:'#ff6b9d',
-  Pakara:'#008080',Vatsa:'#00d4ff',Cardio:'#ff3333',Muu:'#909090'
+  Rinta:'#ff3333',Selkä:'#FF6B35',Olkapäät:'#00ff41',
+  Hauis:'#ff6b9d',Ojentaja:'#FF6B35',Jalat:'#ff6b9d',
+  Pakara:'#008080',Vatsa:'#FF6B35',Cardio:'#ff3333',Muu:'#909090'
 };
 const DAY_NAMES = ['A','B','C','D','E','F'];
 
@@ -891,21 +891,21 @@ function vStats() {
         <div class="stat-title">Viikkovolyymi (kg)</div>
         <div id="wc" style="height:200px"></div>
       </div>` : ''}
-    <div class="stat-card">
+    <div class="stat-card" style="overflow:visible;padding:18px 12px">
       <div class="stat-title">Treenipäivät (13 viikkoa)</div>
-      <canvas id="cc" height="320"></canvas>
+      <canvas id="cc" height="280" style="width:100%;height:auto;display:block"></canvas>
     </div>
     <div class="stat-card">
-      <div class="stat-title">Harjoiteittainen volyymi</div>
+      <div class="stat-title">🔥 Harjoiteittainen volyymi (Top 8)</div>
       <div id="pie-chart" style="height:280px"></div>
     </div>
     <div class="stat-card">
-      <div class="stat-title">Volyymi viikonpäivittäin</div>
-      <div id="dow-chart" style="height:200px"></div>
+      <div class="stat-title">💪 Volyymi viikonpäivittäin</div>
+      <div id="dow-chart" style="height:240px"></div>
     </div>
     <div class="stat-card">
-      <div class="stat-title">💪 Voiman kehitys (viimeiset 13 viikkoa)</div>
-      <div id="strength-chart" style="height:240px"></div>
+      <div class="stat-title">🏋️ Kokonaisvolyymi kategorioittain</div>
+      <div id="category-volume" style="height:260px"></div>
     </div>
     <div class="stat-card">
       <div class="stat-title">🔥 Workout Streak</div>
@@ -1004,10 +1004,6 @@ function vExercises() {
                     <div id="scatter-${sel.id}" style="height:240px"></div>
                   </div>` : '';
               })()}
-              <div style="border-top:1px solid #2d2d2d;padding-top:12px;margin-top:12px">
-                <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">📈 Paino-nousutrendi</div>
-                <div id="weight-trend-${sel.id}" style="height:200px"></div>
-              </div>
             `;
           })()}
         </div>
@@ -1123,7 +1119,7 @@ function drawCal(id) {
     const has=wd.has(k), isTod=dago===0;
     const x=lpad+w*cs+1, y=tpad+d*cs+1, sz=cs-2;
     rr(ctx,x,y,sz,sz,Math.min(4,sz/3));
-    ctx.fillStyle=has?'#00d4ffdd':'#2d2d2d'; ctx.fill();
+    ctx.fillStyle=has?'#FF6B35dd':'#2d2d2d'; ctx.fill();
     if (isTod) { rr(ctx,x,y,sz,sz,Math.min(4,sz/3)); ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5; ctx.stroke(); }
   }
 
@@ -1205,8 +1201,8 @@ function drawCharts() {
         grid:{left:40,right:20,top:10,bottom:30},
         xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11}},
         yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#00d4ff'},smooth:true}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#00d4ff',textStyle:{color:'#fff'}},
+        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#FF6B35'},smooth:true}],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#FF6B35',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1269,46 +1265,39 @@ function drawCharts() {
     }
   }
 
-  // Strength progression chart
-  const strengthData = [];
-  const workoutsByWeek = {};
+  // Category volume chart
+  const catVol = {};
   DB.workouts.forEach(w => {
-    const d = new Date(w.date);
-    const weekStart = new Date(d);
-    weekStart.setDate(d.getDate() - d.getDay());
-    const weekKey = weekStart.toISOString().slice(0,10);
-    if (!workoutsByWeek[weekKey]) workoutsByWeek[weekKey] = 0;
-    workoutsByWeek[weekKey] += w.sets.reduce((a,s)=>a+s.weight*s.reps,0);
-  });
-  Object.entries(workoutsByWeek).slice(-13).forEach(([k,v]) => {
-    const d = new Date(k);
-    strengthData.push({lbl: d.toLocaleDateString('fi-FI',{month:'short',day:'numeric'}), vol: Math.round(v)});
-  });
-  if (strengthData.length >= 2) {
-    setTimeout(() => {
-      const el = document.getElementById('strength-chart');
-      if (el) {
-        const chart = echarts.init(el);
-        chart.setOption({
-          responsive: true,
-          grid: {left: 40, right: 20, top: 10, bottom: 30},
-          xAxis: {type: 'category', data: strengthData.map(d => d.lbl), axisLabel: {fontSize: 11}},
-          yAxis: {type: 'value', axisLabel: {fontSize: 11}},
-          series: [{
-            data: strengthData.map(d => d.vol),
-            type: 'line',
-            smooth: true,
-            itemStyle: {color: '#ffb700'},
-            areaStyle: {color: 'rgba(255, 183, 0, 0.2)'},
-            lineStyle: {width: 2, color: '#ffb700'},
-            emphasis: {itemStyle: {color: '#ffd000'}}
-          }],
-          tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ffb700', textStyle: {color: '#fff'}, formatter: '{c} kg'},
-          animation: true
-        });
-        chart.resize();
+    w.sets.forEach(s => {
+      const ex = getEx(s.exerciseId);
+      if (ex) {
+        const cat = ex.cat || 'Muu';
+        catVol[cat] = (catVol[cat] || 0) + s.weight * s.reps;
       }
-    }, 50);
+    });
+  });
+  const catData = Object.entries(catVol).map(([k, v]) => ({name: k, value: Math.round(v)})).sort((a,b) => b.value - a.value);
+  if (catData.length > 0) {
+    const el = document.getElementById('category-volume');
+    if (el) {
+      const chart = echarts.init(el);
+      const colors = ['#FF6B35', '#FFB700', '#FF9500', '#FF7043', '#FFA726', '#FFB74D', '#FFCA28', '#FFD54F'];
+      chart.setOption({
+        responsive: true,
+        grid: {left: 60, right: 20, top: 10, bottom: 30},
+        xAxis: {type: 'value', axisLabel: {fontSize: 11}},
+        yAxis: {type: 'category', data: catData.map(d => d.name), axisLabel: {fontSize: 11}},
+        series: [{
+          data: catData.map(d => d.value),
+          type: 'bar',
+          itemStyle: {color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{offset: 0, color: '#FF6B35'}, {offset: 1, color: '#FFB700'}])},
+          label: {show: true, position: 'right', fontSize: 11}
+        }],
+        tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF6B35', textStyle: {color: '#fff'}, formatter: '{c} kg'},
+        animation: true
+      });
+      setTimeout(() => chart.resize(), 0);
+    }
   }
 
   // Calendar heatmap
@@ -1573,53 +1562,11 @@ function render() {
             series: [{
               data: allSets,
               type: 'scatter',
-              symbolSize: 8,
-              itemStyle: {color: '#ff3333', opacity: 0.8},
-              emphasis: {itemStyle: {color: '#ff4444', borderColor: '#fff', borderWidth: 2}}
+              symbolSize: 14,
+              itemStyle: {color: '#FF6B35', opacity: 0.9},
+              emphasis: {itemStyle: {color: '#FFB700', borderColor: '#fff', borderWidth: 2}}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff3333', textStyle: {color: '#fff'}, formatter: '{c}'},
-            animation: true
-          });
-          chart.resize();
-        }
-      }
-      // Weight trend chart
-      const weightTrendData = [];
-      const workoutsByDate = {};
-      DB.workouts.forEach(w => {
-        w.sets.forEach(s => {
-          if (s.exerciseId === exId) {
-            const d = new Date(w.date);
-            const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            if (!workoutsByDate[k] || workoutsByDate[k] < s.weight) {
-              workoutsByDate[k] = s.weight;
-            }
-          }
-        });
-      });
-      Object.entries(workoutsByDate).sort((a,b) => a[0].localeCompare(b[0])).slice(-20).forEach(([k,v]) => {
-        const parts = k.split('-');
-        const date = new Date(parts[0], parseInt(parts[1])-1, parts[2]);
-        weightTrendData.push({lbl: date.toLocaleDateString('fi-FI',{month:'short',day:'numeric'}), weight: v});
-      });
-      if (weightTrendData.length >= 2) {
-        const el = document.getElementById(`weight-trend-${exId}`);
-        if (el) {
-          const chart = echarts.init(el);
-          chart.setOption({
-            responsive: true,
-            grid: {left: 40, right: 20, top: 10, bottom: 30},
-            xAxis: {type: 'category', data: weightTrendData.map(d => d.lbl), axisLabel: {fontSize: 11}},
-            yAxis: {type: 'value', axisLabel: {fontSize: 11}},
-            series: [{
-              data: weightTrendData.map(d => d.weight),
-              type: 'line',
-              smooth: true,
-              itemStyle: {color: '#00d4ff'},
-              areaStyle: {color: 'rgba(0, 212, 255, 0.2)'},
-              lineStyle: {width: 2, color: '#00d4ff'}
-            }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#00d4ff', textStyle: {color: '#fff'}, formatter: '{c} kg'},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF6B35', textStyle: {color: '#fff'}, formatter: '{c}'},
             animation: true
           });
           chart.resize();
