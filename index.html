@@ -1109,7 +1109,7 @@ function drawCal(id) {
   // Grid
   const tdow=today.getDay();
   for (let w=0;w<weeks;w++) for (let d=0;d<7;d++) {
-    const dago=(weeks-1-w)*7+(tdow-d);
+    const dago=(weeks-1-w)*7+(6-d);
     if (dago<0) continue;
     const dt=new Date(today); dt.setDate(today.getDate()-dago);
     const k=`${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
@@ -1124,7 +1124,7 @@ function drawCal(id) {
   ctx.fillStyle='#636366'; ctx.font='10px -apple-system'; ctx.textAlign='center'; ctx.textBaseline='top';
   const MN=['Ta','He','Ma','Hu','To','Ke','He','El','Sy','Lo','Ma','Jo'];
   for (let w=0;w<weeks;w+=3) {
-    const dt=new Date(today); dt.setDate(today.getDate()-(weeks-1-w)*7-(tdow));
+    const dt=new Date(today); dt.setDate(today.getDate()-(weeks-1-w)*7-6);
     ctx.fillText(MN[dt.getMonth()], lpad+w*cs+cs/2, tpad+7*cs+6);
   }
 }
