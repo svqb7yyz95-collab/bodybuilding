@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Treeni">
 <meta name="theme-color" content="#0d0d0d">
 <title>Kehonrakennus</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
 :root{
   --bg:#0d0d0d;--surface:#1c1c1e;--surface2:#2c2c2e;
@@ -1166,8 +1167,21 @@ function drawScatter(id, data) {
 function drawCharts() {
   if (S.view!=='stats') return;
   const wv=weeklyVol();
-  if (wv.length>=2) drawBars('wc', wv, '#ff6b35');
-  drawCal('cc');
+
+  // Weekly volume chart
+  if(wv.length>=2) {
+    const chart=echarts.init(document.getElementById('wc'));
+    chart.setOption({
+      responsive:true,
+      grid:{left:40,right:20,top:10,bottom:30},
+      xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11}},
+      yAxis:{type:'value',axisLabel:{fontSize:11}},
+      series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#ff6b35'},smooth:true}],
+      tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#ff6b35',textStyle:{color:'#fff'}},
+      animation:true
+    });
+  }
+
   // Exercise pie chart
   const exBreak={}; DB.workouts.forEach(w=>{
     w.sets.forEach(s=>{
@@ -1175,8 +1189,26 @@ function drawCharts() {
       if(ex) exBreak[ex.name]=(exBreak[ex.name]||0)+s.weight*s.reps;
     });
   });
-  const pieData=Object.entries(exBreak).map(([k,v])=>({lbl:k,val:Math.round(v)})).sort((a,b)=>b.val-a.val);
-  if(pieData.length>0) drawPie('pie-chart', pieData, Object.values(CAT_CLR));
+  const pieData=Object.entries(exBreak).map(([k,v])=>({name:k,value:Math.round(v)})).sort((a,b)=>b.value-a.value);
+  if(pieData.length>0) {
+    const chart=echarts.init(document.getElementById('pie-chart'));
+    const colors=Object.values(CAT_CLR);
+    chart.setOption({
+      responsive:true,
+      series:[{
+        name:'Volyymi',
+        type:'pie',
+        radius:['20%','70%'],
+        data:pieData,
+        itemStyle:{borderColor:'#0d0d0d',borderWidth:2},
+        label:{fontSize:11,color:'#fff'}
+      }],
+      tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#ff6b35',textStyle:{color:'#fff'}},
+      color:colors,
+      animation:true
+    });
+  }
+
   // Day of week
   const dowVol={};
   DB.workouts.forEach(w=>{
@@ -1184,8 +1216,19 @@ function drawCharts() {
     const dn=['Su','Ma','Ti','Ke','To','Pe','La'][d];
     dowVol[dn]=(dowVol[dn]||0)+w.sets.reduce((a,s)=>a+s.weight*s.reps,0);
   });
-  const dowData=['Ma','Ti','Ke','To','Pe','La','Su'].map(d=>({lbl:d,vol:Math.round(dowVol[d]||0)}));
-  if(dowData.some(d=>d.vol>0)) drawBars('dow-chart',dowData,'#45b7d1');
+  const dowData=['Ma','Ti','Ke','To','Pe','La','Su'].map(d=>({name:d,value:Math.round(dowVol[d]||0)}));
+  if(dowData.some(d=>d.value>0)) {
+    const chart=echarts.init(document.getElementById('dow-chart'));
+    chart.setOption({
+      responsive:true,
+      grid:{left:40,right:20,top:10,bottom:30},
+      xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11}},
+      yAxis:{type:'value',axisLabel:{fontSize:11}},
+      series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#45b7d1'}}],
+      tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#45b7d1',textStyle:{color:'#fff'}},
+      animation:true
+    });
+  }
 }
 
 // ─── MODAL ────────────────────────────────────────────────────────────────────
@@ -1409,15 +1452,50 @@ function render() {
     const exId = S.statsEx || (DB.exercises[0]?.id);
     if (exId) {
       const hist = volHistory(exId, 12);
-      if (hist.length >= 2) drawLine('ex-chart', hist, '#ff6b35');
+      if (hist.length >= 2) {
+        const chart = echarts.init(document.getElementById('ex-chart'));
+        chart.setOption({
+          responsive: true,
+          grid: {left: 40, right: 20, top: 10, bottom: 30},
+          xAxis: {type: 'category', data: hist.map(d => d.lbl), axisLabel: {fontSize: 11}},
+          yAxis: {type: 'value', axisLabel: {fontSize: 11}},
+          series: [{
+            data: hist.map(d => d.vol),
+            type: 'line',
+            smooth: true,
+            itemStyle: {color: '#ff6b35'},
+            areaStyle: {color: 'rgba(255, 107, 53, 0.3)'},
+            lineStyle: {width: 2}
+          }],
+          tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff6b35', textStyle: {color: '#fff'}},
+          animation: true
+        });
+      }
       // Scatter plot
       const allSets = [];
       DB.workouts.forEach(w => {
         w.sets.forEach(s => {
-          if (s.exerciseId === exId) allSets.push({w: s.weight, r: s.reps});
+          if (s.exerciseId === exId) allSets.push([s.weight, s.reps]);
         });
       });
-      if (allSets.length >= 3) drawScatter(`scatter-${exId}`, allSets);
+      if (allSets.length >= 3) {
+        const chart = echarts.init(document.getElementById(`scatter-${exId}`));
+        chart.setOption({
+          responsive: true,
+          grid: {left: 40, right: 20, top: 10, bottom: 30},
+          xAxis: {type: 'value', name: 'Paino (kg)', nameTextStyle: {fontSize: 11}, axisLabel: {fontSize: 11}},
+          yAxis: {type: 'value', name: 'Toistot', nameTextStyle: {fontSize: 11}, axisLabel: {fontSize: 11}},
+          series: [{
+            data: allSets,
+            type: 'scatter',
+            symbolSize: 8,
+            itemStyle: {color: '#ff6b35', opacity: 0.8},
+            emphasis: {itemStyle: {color: '#ff9500', borderColor: '#fff', borderWidth: 2}}
+          }],
+          tooltip: {backgroundColor: 'rgba(0,0,0,0.7)', borderColor: '#ff6b35', textStyle: {color: '#fff'}, formatter: '{c}'},
+          animation: true
+        });
+      }
     }
   });
 }
