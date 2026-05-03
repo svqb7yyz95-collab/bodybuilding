@@ -891,7 +891,7 @@ function vStats() {
         <div class="stat-title">Viikkovolyymi (kg)</div>
         <div id="wc" style="height:200px"></div>
       </div>` : ''}
-    <div class="stat-card" style="overflow:visible;padding:18px 12px">
+    <div class="stat-card" style="overflow:visible;padding:18px 8px;margin:0 4px 20px">
       <div class="stat-title">Treenipäivät (13 viikkoa)</div>
       <canvas id="cc" height="280" style="width:100%;height:auto;display:block"></canvas>
     </div>
@@ -902,10 +902,6 @@ function vStats() {
     <div class="stat-card">
       <div class="stat-title">💪 Volyymi viikonpäivittäin</div>
       <div id="dow-chart" style="height:240px"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-title">🏋️ Kokonaisvolyymi kategorioittain</div>
-      <div id="category-volume" style="height:260px"></div>
     </div>
     <div class="stat-card">
       <div class="stat-title">🔥 Workout Streak</div>
@@ -1100,7 +1096,8 @@ function drawBars(id, data, color) {
 function drawCal(id) {
   const cv=setupCanvas(id); if (!cv) return;
   const {ctx,W,H}=cv, wd=workoutDays();
-  const lpad=28, tpad=12, weeks=13, cs=Math.floor((W-lpad-12)/weeks);
+  const lpad=20, tpad=12, weeks=13;
+  const cs=Math.max(12, Math.floor((W-lpad-4)/weeks));
   const today=new Date(); today.setHours(0,0,0,0);
 
   // Day labels (left)
@@ -1262,41 +1259,6 @@ function drawCharts() {
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
-    }
-  }
-
-  // Category volume chart
-  const catVol = {};
-  DB.workouts.forEach(w => {
-    w.sets.forEach(s => {
-      const ex = getEx(s.exerciseId);
-      if (ex) {
-        const cat = ex.cat || 'Muu';
-        catVol[cat] = (catVol[cat] || 0) + s.weight * s.reps;
-      }
-    });
-  });
-  const catData = Object.entries(catVol).map(([k, v]) => ({name: k, value: Math.round(v)})).sort((a,b) => b.value - a.value);
-  if (catData.length > 0) {
-    const el = document.getElementById('category-volume');
-    if (el) {
-      const chart = echarts.init(el);
-      const colors = ['#FF6B35', '#FFB700', '#FF9500', '#FF7043', '#FFA726', '#FFB74D', '#FFCA28', '#FFD54F'];
-      chart.setOption({
-        responsive: true,
-        grid: {left: 60, right: 20, top: 10, bottom: 30},
-        xAxis: {type: 'value', axisLabel: {fontSize: 11}},
-        yAxis: {type: 'category', data: catData.map(d => d.name), axisLabel: {fontSize: 11}},
-        series: [{
-          data: catData.map(d => d.value),
-          type: 'bar',
-          itemStyle: {color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{offset: 0, color: '#FF6B35'}, {offset: 1, color: '#FFB700'}])},
-          label: {show: true, position: 'right', fontSize: 11}
-        }],
-        tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF6B35', textStyle: {color: '#fff'}, formatter: '{c} kg'},
-        animation: true
-      });
-      setTimeout(() => chart.resize(), 0);
     }
   }
 
