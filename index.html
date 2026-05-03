@@ -891,9 +891,9 @@ function vStats() {
         <div class="stat-title">Viikkovolyymi (kg)</div>
         <div id="wc" style="height:200px"></div>
       </div>` : ''}
-    <div class="stat-card" style="overflow:visible;padding:18px 8px;margin:0 4px 20px">
-      <div class="stat-title">Treenipäivät (13 viikkoa)</div>
-      <canvas id="cc" height="280" style="width:100%;height:auto;display:block"></canvas>
+    <div class="stat-card">
+      <div class="stat-title">📅 Treenipäivät (13 viikkoa)</div>
+      <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 0"></div>
     </div>
     <div class="stat-card">
       <div class="stat-title">🔥 Harjoiteittainen volyymi (Top 8)</div>
@@ -1093,42 +1093,6 @@ function drawBars(id, data, color) {
   });
 }
 
-function drawCal(id) {
-  const cv=setupCanvas(id); if (!cv) return;
-  const {ctx,W,H}=cv, wd=workoutDays();
-  const lpad=20, tpad=12, weeks=13;
-  const cs=Math.max(12, Math.floor((W-lpad-4)/weeks));
-  const today=new Date(); today.setHours(0,0,0,0);
-
-  // Day labels (left)
-  ctx.fillStyle='#636366'; ctx.font='10px -apple-system'; ctx.textAlign='right'; ctx.textBaseline='middle';
-  ['Su','Ma','Ti','Ke','To','Pe','La'].forEach((l,d)=>{
-    if ([1,3,5].includes(d)) ctx.fillText(l, lpad-6, tpad+d*cs+cs/2);
-  });
-
-  // Grid
-  const tdow=today.getDay();
-  for (let w=0;w<weeks;w++) for (let d=0;d<7;d++) {
-    const dago=(weeks-1-w)*7+(6-d);
-    if (dago<0) continue;
-    const dt=new Date(today); dt.setDate(today.getDate()-dago);
-    const k=`${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
-    const has=wd.has(k), isTod=dago===0;
-    const x=lpad+w*cs+1, y=tpad+d*cs+1, sz=cs-2;
-    rr(ctx,x,y,sz,sz,Math.min(4,sz/3));
-    ctx.fillStyle=has?'#FF6B35dd':'#2d2d2d'; ctx.fill();
-    if (isTod) { rr(ctx,x,y,sz,sz,Math.min(4,sz/3)); ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5; ctx.stroke(); }
-  }
-
-  // Month labels
-  ctx.fillStyle='#636366'; ctx.font='10px -apple-system'; ctx.textAlign='center'; ctx.textBaseline='top';
-  const MN=['Ta','He','Ma','Hu','To','Ke','He','El','Sy','Lo','Ma','Jo'];
-  for (let w=0;w<weeks;w+=3) {
-    const dt=new Date(today); dt.setDate(today.getDate()-(weeks-1-w)*7-6);
-    ctx.fillText(MN[dt.getMonth()], lpad+w*cs+cs/2, tpad+7*cs+6);
-  }
-}
-
 function drawPie(id, data, colors) {
   const c=document.getElementById(id); if (!c) return;
   const dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
@@ -1182,6 +1146,82 @@ function drawScatter(id, data) {
     ctx.fillStyle='#e8e8e8'; ctx.fill();
     ctx.strokeStyle='#d0d0d088'; ctx.lineWidth=2; ctx.stroke();
   });
+}
+
+function drawInteractiveCalendar() {
+  const grid = document.getElementById('calendar-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const wd = workoutDays();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Create 91 days (13 weeks) grid
+  for (let i = 90; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const hasWorkout = wd.has(k);
+    const dayName = ['Su','Ma','Ti','Ke','To','Pe','La'][d.getDay()];
+
+    const dayEl = document.createElement('div');
+    dayEl.style.cssText = `
+      aspect-ratio:1;
+      background:${hasWorkout ? '#FF6B35' : '#2d2d2d'};
+      border-radius:4px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:10px;
+      color:${hasWorkout ? '#fff' : '#909090'};
+      cursor:${hasWorkout ? 'pointer' : 'default'};
+      font-weight:${hasWorkout ? '600' : '400'};
+      border:1px solid ${hasWorkout ? '#FF8B55' : '#333333'};
+      transition:all 0.15s;
+    `;
+    dayEl.textContent = d.getDate();
+    dayEl.title = `${d.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}`;
+
+    if (hasWorkout) {
+      dayEl.style.cursor = 'pointer';
+      dayEl.onmouseover = () => dayEl.style.background = '#FFB700';
+      dayEl.onmouseout = () => dayEl.style.background = '#FF6B35';
+      dayEl.onclick = () => showWorkoutDay(k, d);
+    }
+
+    grid.appendChild(dayEl);
+  }
+}
+
+function showWorkoutDay(dateKey, date) {
+  const workouts = DB.workouts.filter(w => {
+    const wd = new Date(w.date);
+    return `${wd.getFullYear()}-${wd.getMonth()}-${wd.getDate()}` === dateKey;
+  });
+
+  if (!workouts.length) return;
+
+  let content = `<div style="padding:20px">
+    <div style="font-size:18px;font-weight:700;margin-bottom:16px">${date.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>`;
+
+  workouts.forEach(w => {
+    content += `<div style="margin-bottom:16px;background:#1a1a1a;padding:12px;border-radius:8px">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px">⏱ ${fmtDur.call({workout: w})}</div>`;
+
+    w.sets.forEach(s => {
+      const ex = getEx(s.exerciseId);
+      content += `<div style="font-size:12px;color:var(--text2);padding:4px 0">${ex ? ex.name : 'Tuntematon'}: ${s.weight}kg × ${s.reps}</div>`;
+    });
+
+    content += `</div>`;
+  });
+
+  content += `</div>`;
+
+  const el = document.createElement('div');
+  el.className = 'modal-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-height:80vh;overflow-y:auto">${content}</div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
 }
 
 function drawCharts() {
@@ -1262,8 +1302,8 @@ function drawCharts() {
     }
   }
 
-  // Calendar heatmap
-  drawCal('cc');
+  // Draw interactive calendar
+  drawInteractiveCalendar();
 }
 
 // ─── MODAL ────────────────────────────────────────────────────────────────────
