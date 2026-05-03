@@ -1155,33 +1155,42 @@ function drawInteractiveCalendar() {
   const wd = workoutDays();
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // Create 91 days (13 weeks) grid
-  for (let i = 90; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
+  // Get current month's first and last day
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDate = new Date(firstDay);
+  startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+  // Create grid for the month (6 weeks max)
+  let currentDate = new Date(startDate);
+  for (let i = 0; i < 42; i++) { // 6 weeks * 7 days
+    const d = new Date(currentDate);
     const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
     const hasWorkout = wd.has(k);
-    const dayName = ['Su','Ma','Ti','Ke','To','Pe','La'][d.getDay()];
+    const isCurrentMonth = d.getMonth() === month;
 
     const dayEl = document.createElement('div');
     dayEl.style.cssText = `
       aspect-ratio:1;
-      background:${hasWorkout ? '#FF6B35' : '#2d2d2d'};
+      background:${isCurrentMonth ? (hasWorkout ? '#FF6B35' : '#2d2d2d') : '#1a1a1a'};
       border-radius:4px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:10px;
-      color:${hasWorkout ? '#fff' : '#909090'};
-      cursor:${hasWorkout ? 'pointer' : 'default'};
+      font-size:11px;
+      color:${isCurrentMonth ? (hasWorkout ? '#fff' : '#909090') : '#505050'};
+      cursor:${hasWorkout && isCurrentMonth ? 'pointer' : 'default'};
       font-weight:${hasWorkout ? '600' : '400'};
-      border:1px solid ${hasWorkout ? '#FF8B55' : '#333333'};
+      border:1px solid ${isCurrentMonth ? (hasWorkout ? '#FF8B55' : '#333333') : '#252525'};
       transition:all 0.15s;
+      opacity:${isCurrentMonth ? '1' : '0.5'};
     `;
     dayEl.textContent = d.getDate();
-    dayEl.title = `${d.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}`;
+    dayEl.title = d.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 
-    if (hasWorkout) {
+    if (hasWorkout && isCurrentMonth) {
       dayEl.style.cursor = 'pointer';
       dayEl.onmouseover = () => dayEl.style.background = '#FFB700';
       dayEl.onmouseout = () => dayEl.style.background = '#FF6B35';
@@ -1189,6 +1198,7 @@ function drawInteractiveCalendar() {
     }
 
     grid.appendChild(dayEl);
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 }
 
