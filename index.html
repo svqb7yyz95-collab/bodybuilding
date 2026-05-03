@@ -13,7 +13,7 @@
 <style>
 :root{
   --bg:#000000;--surface:#1a1a1a;--surface2:#2d2d2d;
-  --accent:#e8e8e8;--text:#fff;--text2:#d8d8d8;--text3:#a0a0a0;
+  --accent:#d4af37;--text:#fff;--text2:#e0e0e0;--text3:#909090;
   --success:#30d158;--warn:#ffd60a;--danger:#ff453a;
   --border:#2d2d2d;--r:12px;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
@@ -52,7 +52,7 @@ body{
   transition:opacity .15s,transform .1s;-webkit-appearance:none;
 }
 .btn:active{opacity:.7;transform:scale(.97)}
-.btn-primary{background:var(--accent);color:#fff}
+.btn-primary{background:var(--accent);color:#000}
 .btn-secondary{background:var(--surface2);color:var(--text)}
 .btn-danger{background:#ff453a22;color:var(--danger);border:1px solid #ff453a33}
 .btn-full{width:100%}
@@ -570,7 +570,7 @@ function vWorkoutIdle() {
             <div class="day-start-name">${esc(day.name)}</div>
             <div class="day-start-exs">${
               hasEx
-                ? exs.map(e=>`<span style="color:${CAT_CLR[e.cat]||'#636366'}">${esc(e.name)}</span>`).join(' &middot; ')
+                ? exs.map(e=>`<span>${esc(e.name)}</span>`).join(' &middot; ')
                 : 'Ei harjoitteita — lisää Ohjelma-välilehdeltä'
             }</div>
           </div>
@@ -657,15 +657,12 @@ function exCard(ex) {
 
   const dw = draft.weight !== undefined ? draft.weight : (lastSetToday?.weight ?? refSetLastWorkout?.weight ?? '');
   const dr = ''; // Always empty - user enters reps fresh
-  const clr = CAT_CLR[ex.cat]||'#636366';
-
   return `
     <div class="ex-card fade-in" style="${isDone?'opacity:.5;':''}" ${isDone?'data-done=1':''}>
       <div class="ex-head">
         <div style="flex:1;min-width:0">
           <div class="ex-name" style="${isDone?'color:var(--text3);text-decoration:line-through;':''}">${esc(ex.name)}</div>
         </div>
-        ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}20;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>` : ''}
         ${!isDone ? `
           <button class="btn btn-success btn-sm" style="font-size:11px;flex-shrink:0" onclick="markExDone('${ex.id}')">✓ Valmis</button>` : ''}
       </div>
@@ -777,7 +774,6 @@ function vProgram() {
       ${exs.length ? `
         <div class="list-wrap fade-in">
           ${exs.map((ex,i) => {
-            const clr = CAT_CLR[ex.cat]||'#636366';
             const isRenaming = S.renamingEx === ex.id;
             return `
               <div class="list-item">
@@ -786,7 +782,6 @@ function vProgram() {
                     <button class="order-btn" onclick="moveExInDay('${ex.id}',-1,${di})" ${i===0?'disabled':''}>▲</button>
                     <button class="order-btn" onclick="moveExInDay('${ex.id}',1,${di})" ${i===exs.length-1?'disabled':''}>▼</button>
                   </div>` : ''}
-                ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}22;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>` : ''}
                 ${isRenaming ? `
                   <input type="text" id="rename-${ex.id}" class="input" style="flex:1;font-size:14px;padding:6px 10px"
                     value="${esc(ex.name)}" maxlength="40" autofocus
@@ -932,9 +927,6 @@ function vExercises() {
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
             <div style="flex:1">
               <div style="font-size:18px;font-weight:700">${esc(sel.name)}</div>
-              <div style="font-size:12px;color:var(--text3);margin-top:3px">
-                ${sel.cat !== 'Muu' ? `<span style="background:${CAT_CLR[sel.cat]}22;color:${CAT_CLR[sel.cat]};padding:3px 8px;border-radius:4px">${esc(sel.cat)}</span>` : ''}
-              </div>
             </div>
           </div>
           ${(() => {
