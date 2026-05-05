@@ -19,9 +19,10 @@
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{height:100%;overflow:hidden}
+html{height:100%;overflow:hidden;background:var(--bg)}
 body{
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  background-color:var(--bg);
   background:linear-gradient(135deg, var(--bg) 0%, #1a0450 100%);color:var(--text);height:100%;overflow:hidden;
   -webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;
 }
@@ -30,8 +31,13 @@ body{
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--sat)}
 #content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 #tab-bar{
-  display:flex;background:var(--surface);border-top:2px solid var(--accent);
-  padding-bottom:var(--sab);flex-shrink:0;box-shadow:0 -4px 20px rgba(255, 0, 110, 0.3);
+  display:flex;
+  background:var(--surface);
+  border-top:2px solid var(--accent);
+  padding-bottom:max(12px, var(--sab));
+  flex-shrink:0;
+  box-shadow:0 -4px 20px rgba(255, 0, 110, 0.3);
+  background-origin:padding-box;
 }
 .tab{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
