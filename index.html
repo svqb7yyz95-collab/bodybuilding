@@ -7,22 +7,22 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Treeni">
-<meta name="theme-color" content="#0d0d0d">
+<meta name="theme-color" content="#0f0415">
 <title>Kehonrakennus</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
 :root{
-  --bg:#0a0a0a;--surface:#1a1a1a;--surface2:#252525;
-  --accent:#FF6B35;--text:#fff;--text2:#e0e0e0;--text3:#909090;
-  --success:#4CAF50;--warn:#FFB700;--danger:#FF5252;
-  --border:#333333;--r:12px;
+  --bg:#0f0415;--surface:#1a0933;--surface2:#2d1b4e;
+  --accent:#FF006E;--accent2:#00D9FF;--text:#fff;--text2:#e0e0e0;--text3:#909090;
+  --success:#00FF41;--warn:#FFD700;--danger:#FF1493;
+  --border:#4d2d7f;--r:12px;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{height:100%;overflow:hidden}
 body{
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
-  background:var(--bg);color:var(--text);height:100%;overflow:hidden;
+  background:linear-gradient(135deg, var(--bg) 0%, #1a0450 100%);color:var(--text);height:100%;overflow:hidden;
   -webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;
 }
 
@@ -30,49 +30,53 @@ body{
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--sat)}
 #content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 #tab-bar{
-  display:flex;background:var(--surface);border-top:1px solid #2d2d2d;
-  padding-bottom:var(--sab);flex-shrink:0;
+  display:flex;background:var(--surface);border-top:2px solid var(--accent);
+  padding-bottom:var(--sab);flex-shrink:0;box-shadow:0 -4px 20px rgba(255, 0, 110, 0.3);
 }
 .tab{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:8px 0;background:none;border:none;color:var(--text3);
-  font-size:10px;font-weight:500;gap:3px;cursor:pointer;transition:color .15s;
+  font-size:10px;font-weight:500;gap:3px;cursor:pointer;transition:all .15s;
 }
-.tab.active{color:var(--accent)}
+.tab.active{color:var(--accent);text-shadow:0 0 10px rgba(255, 0, 110, 0.8)}
 .tab svg{width:22px;height:22px;flex-shrink:0}
 
 /* CARDS */
-.card{background:var(--surface);border-radius:var(--r);padding:16px;margin:0 16px 12px}
+.card{background:var(--surface);border-radius:var(--r);padding:16px;margin:0 16px 12px;border:1px solid rgba(255, 0, 110, 0.2);box-shadow:0 0 15px rgba(255, 0, 110, 0.1)}
 
 /* BUTTONS */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;
   padding:13px 20px;border-radius:var(--r);border:none;
   font-size:15px;font-weight:600;cursor:pointer;gap:6px;
-  transition:opacity .15s,transform .1s;-webkit-appearance:none;
+  transition:all .15s;-webkit-appearance:none;
 }
+.btn-success{background:var(--success);color:#000;box-shadow:0 0 15px rgba(0, 255, 65, 0.4)}
+.btn-success:active{box-shadow:0 0 25px rgba(0, 255, 65, 0.6)}
 .btn:active{opacity:.7;transform:scale(.97)}
-.btn-primary{background:var(--accent);color:#000}
-.btn-secondary{background:var(--surface2);color:var(--text)}
-.btn-danger{background:#ff453a22;color:var(--danger);border:1px solid #ff453a33}
+.btn-primary{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 0 20px rgba(255, 0, 110, 0.5);border:1px solid var(--accent)}
+.btn-primary:active{box-shadow:0 0 30px rgba(255, 0, 110, 0.8)}
+.btn-secondary{background:var(--surface2);color:var(--accent);border:1px solid var(--accent);box-shadow:0 0 10px rgba(255, 0, 110, 0.3)}
+.btn-secondary:active{box-shadow:0 0 20px rgba(255, 0, 110, 0.6)}
+.btn-danger{background:#FF1493aa;color:#fff;border:1px solid var(--danger);box-shadow:0 0 15px rgba(255, 20, 147, 0.5)}
 .btn-full{width:100%}
 .btn-sm{padding:9px 14px;font-size:13px;border-radius:10px}
 .icon-btn{
   width:34px;height:34px;padding:0;border-radius:8px;
-  background:var(--surface2);border:none;cursor:pointer;
+  background:var(--surface2);border:1px solid rgba(255, 0, 110, 0.3);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  color:var(--text2);transition:opacity .15s;flex-shrink:0;
+  color:var(--text2);transition:all .15s;flex-shrink:0;
 }
-.icon-btn:active{opacity:.6}
+.icon-btn:active{opacity:.6;box-shadow:0 0 15px rgba(255, 0, 110, 0.5)}
 
 /* INPUTS */
 .input{
   background:var(--surface2);border:2px solid var(--border);border-radius:10px;
   padding:12px 14px;font-size:16px;color:var(--text);
   outline:none;width:100%;transition:border-color .3s,box-shadow .3s;-webkit-appearance:none;
-  box-shadow:0 0 0 0 rgba(212,175,55,0);
+  box-shadow:0 0 0 0 rgba(255, 0, 110, 0);
 }
-.input:focus{border-color:var(--accent);box-shadow:0 0 12px rgba(212,175,55,0.5)}
+.input:focus{border-color:var(--accent);box-shadow:0 0 15px rgba(255, 0, 110, 0.6)}
 input[type=number].input{-moz-appearance:textfield}
 input[type=number].input::-webkit-outer-spin-button,
 input[type=number].input::-webkit-inner-spin-button{-webkit-appearance:none}
@@ -92,16 +96,16 @@ select.input{
 }
 .split-row::-webkit-scrollbar{display:none}
 .split-pill{
-  flex-shrink:0;padding:8px 14px;border-radius:20px;border:none;
+  flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid var(--border);
   background:var(--surface2);color:var(--text3);
   font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;
 }
-.split-pill.active{background:var(--accent);color:#fff}
+.split-pill.active{background:var(--accent);color:#fff;box-shadow:0 0 15px rgba(255, 0, 110, 0.6)}
 .split-pill:active{opacity:.7}
 
 /* DAY TABS */
 .day-tabs{
-  display:flex;gap:0;border-bottom:1px solid #2d2d2d;
+  display:flex;gap:0;border-bottom:1px solid var(--border);
   overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
 }
 .day-tabs::-webkit-scrollbar{display:none}
@@ -111,17 +115,19 @@ select.input{
   border-bottom:2px solid transparent;transition:all .15s;
   position:relative;bottom:-1px;
 }
-.day-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.day-tab.active{color:var(--accent);border-bottom-color:var(--accent);text-shadow:0 0 10px rgba(255, 0, 110, 0.6)}
 
 /* WORKOUT HEADER */
 .w-top{
   padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid #1c1c1e;position:sticky;top:0;background:var(--bg);z-index:10;
+  border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10;
+  box-shadow:0 2px 15px rgba(255,0,110,0.12);
 }
 .w-dur{font-size:13px;color:var(--text3);font-variant-numeric:tabular-nums}
 .w-day-badge{
   font-size:12px;font-weight:700;color:var(--accent);
-  background:#e8e8e820;padding:3px 10px;border-radius:20px;
+  background:rgba(255,0,110,0.15);padding:3px 10px;border-radius:20px;
+  border:1px solid rgba(255,0,110,0.35);text-shadow:0 0 8px rgba(255,0,110,0.5);
 }
 
 /* REST TIMER */
@@ -129,18 +135,20 @@ select.input{
 .rest-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:2px}
 .rest-val{
   font-size:62px;font-weight:200;letter-spacing:-3px;
-  font-variant-numeric:tabular-nums;transition:color .6s;line-height:1;
+  font-variant-numeric:tabular-nums;transition:all .6s;line-height:1;text-shadow:0 0 20px currentColor;
 }
-.rest-val.g{color:var(--success)} .rest-val.y{color:var(--warn)} .rest-val.r{color:var(--danger)}
+.rest-val.g{color:var(--success);text-shadow:0 0 20px rgba(0, 255, 65, 0.6)}
+.rest-val.y{color:var(--warn);text-shadow:0 0 20px rgba(255, 215, 0, 0.6)}
+.rest-val.r{color:var(--danger);text-shadow:0 0 20px rgba(255, 20, 147, 0.6)}
 .rest-sub{font-size:12px;color:var(--text3);margin-top:4px}
 
 /* EXERCISE CARDS */
-.ex-card{background:var(--surface);border-radius:var(--r);margin:0 16px 12px;overflow:hidden}
+.ex-card{background:var(--surface);border-radius:var(--r);margin:0 16px 12px;overflow:hidden;border:1px solid rgba(255, 0, 110, 0.2);box-shadow:0 0 10px rgba(255, 0, 110, 0.1)}
 .ex-head{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px}
 .ex-name{font-size:16px;font-weight:600;flex:1;min-width:0;line-height:1.2}
 .ex-prev{font-size:12px;color:var(--text3);margin-top:3px}
 .sets-list{padding:0 16px 2px}
-.set-row{display:flex;align-items:center;padding:8px 0;border-top:1px solid #2d2d2d;font-size:14px;gap:8px}
+.set-row{display:flex;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:14px;gap:8px}
 .set-num{color:var(--text3);font-size:11px;width:18px;flex-shrink:0;font-variant-numeric:tabular-nums}
 .set-info{flex:1;font-weight:500}
 .set-del{
@@ -150,15 +158,15 @@ select.input{
 }
 .set-del:active{opacity:.6}
 .add-form{padding:10px 12px 12px}
-.add-form-inner{background:var(--surface2);border-radius:10px;padding:12px}
+.add-form-inner{background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border);box-shadow:0 0 12px rgba(255,0,110,0.08)}
 .form-row{display:flex;gap:8px;margin-bottom:10px}
 .form-col{flex:1}
 .form-lbl{font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:500}
 .add-btn-row{padding:0 12px 12px;display:flex;gap:8px}
 
 /* PROGRAM LIST */
-.list-wrap{margin:0 16px 12px;background:var(--surface);border-radius:var(--r);overflow:hidden}
-.list-item{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid #2d2d2d}
+.list-wrap{margin:0 16px 12px;background:var(--surface);border-radius:var(--r);overflow:hidden;border:1px solid rgba(255, 0, 110, 0.2);box-shadow:0 0 15px rgba(255, 0, 110, 0.1)}
+.list-item{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border)}
 .list-item:last-child{border-bottom:none}
 .list-name{flex:1;font-size:15px;font-weight:500;min-width:0}
 .order-btns{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
@@ -171,20 +179,19 @@ select.input{
 .order-btn:active:not(:disabled){opacity:.6}
 
 /* STATS */
-.stat-card{background:var(--surface);border-radius:var(--r);margin:0 12px 20px;padding:18px;overflow:visible}
+.stat-card{background:var(--surface);border-radius:var(--r);margin:0 12px 20px;padding:18px;overflow:visible;border:1px solid rgba(255, 0, 110, 0.2);box-shadow:0 0 15px rgba(255, 0, 110, 0.1)}
 .stat-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;font-weight:500}
 canvas{display:block;width:100%;height:auto}
-.pr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #2d2d2d;font-size:14px}
+.pr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
 .pr-row:last-child{border-bottom:none}
 .pr-lbl{color:var(--text2)}
 .pr-val{font-weight:700;color:var(--accent)}
 
 /* HISTORY */
-.hist-item{margin:0 16px 12px;background:var(--surface);border-radius:var(--r);overflow:hidden}
+.hist-item{margin:0 16px 12px;background:var(--surface);border-radius:var(--r);overflow:hidden;border:1px solid rgba(0, 217, 255, 0.2);box-shadow:0 0 10px rgba(0, 217, 255, 0.1)}
 .hist-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
 .hist-date{font-weight:600;font-size:15px}
 .hist-meta{font-size:12px;color:var(--text3);margin-top:2px}
-.hist-chevron{transition:transform .2s;flex-shrink:0}
 .hist-body{padding:4px 16px 14px}
 .hist-ex-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin:10px 0 4px}
 .hist-set{font-size:13px;color:var(--text2);padding:2px 0}
@@ -196,12 +203,14 @@ canvas{display:block;width:100%;height:auto}
 
 /* START SCREEN DAY CARDS */
 .day-start-card{
-  background:var(--surface);border-radius:var(--r);margin:0 16px 10px;
+  background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border-radius:var(--r);margin:0 16px 10px;
   padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;
-  transition:opacity .15s,transform .1s;border:1.5px solid transparent;
+  transition:all .15s;border:1.5px solid rgba(255, 0, 110, 0.3);
+  box-shadow:0 0 15px rgba(255, 0, 110, 0.15);
 }
-.day-start-card:active{opacity:.75;transform:scale(.98)}
-.day-start-card.has-ex{border-color:#e8e8e830}
+.day-start-card:active{opacity:.75;transform:scale(.98);box-shadow:0 0 30px rgba(255, 0, 110, 0.5)}
+.day-start-card.has-ex{border-color:var(--accent);box-shadow:0 0 20px rgba(255,0,110,0.25)}
 .day-start-name{font-size:17px;font-weight:700}
 .day-start-exs{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.4}
 .day-start-arrow{color:var(--text3);flex-shrink:0}
@@ -213,17 +222,21 @@ canvas{display:block;width:100%;height:auto}
 
 /* MODAL */
 .modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  position:fixed;inset:0;background:rgba(0,0,0,.85);
   display:flex;align-items:flex-end;z-index:50;
   animation:fadeOvr .15s ease;
+  backdrop-filter:blur(4px);
 }
 @keyframes fadeOvr{from{opacity:0}to{opacity:1}}
 .modal-sheet{
-  background:#1c1c1e;border-radius:16px 16px 0 0;width:100%;
+  background:linear-gradient(180deg, var(--surface2) 0%, var(--surface) 100%);
+  border-radius:16px 16px 0 0;width:100%;
   padding:20px 20px calc(20px + var(--sab));animation:slideUp .2s ease;
+  border:1px solid rgba(255, 0, 110, 0.35);border-bottom:none;
+  box-shadow:0 -10px 50px rgba(255, 0, 110, 0.25);
 }
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
-.modal-handle{width:36px;height:4px;background:#3a3a3c;border-radius:2px;margin:0 auto 18px}
+.modal-handle{width:36px;height:4px;background:rgba(255,0,110,0.4);border-radius:2px;margin:0 auto 18px;box-shadow:0 0 8px rgba(255,0,110,0.5)}
 .modal-title{font-size:17px;font-weight:600;margin-bottom:6px;text-align:center}
 .modal-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:20px;line-height:1.4}
 .modal-btns{display:flex;flex-direction:column;gap:10px}
@@ -274,9 +287,9 @@ canvas{display:block;width:100%;height:auto}
 
 const CATS = ['Rinta','Selkä','Olkapäät','Hauis','Ojentaja','Jalat','Pakara','Vatsa','Cardio','Muu'];
 const CAT_CLR = {
-  Rinta:'#ff3333',Selkä:'#FF6B35',Olkapäät:'#00ff41',
-  Hauis:'#ff6b9d',Ojentaja:'#FF6B35',Jalat:'#ff6b9d',
-  Pakara:'#008080',Vatsa:'#FF6B35',Cardio:'#ff3333',Muu:'#909090'
+  Rinta:'#FF006E',Selkä:'#00D9FF',Olkapäät:'#9D4EDD',
+  Hauis:'#00FF41',Ojentaja:'#FFD700',Jalat:'#FF6B6B',
+  Pakara:'#FF69B4',Vatsa:'#00FFFF',Cardio:'#FF1493',Muu:'#909090'
 };
 const DAY_NAMES = ['A','B','C','D','E','F'];
 
@@ -294,6 +307,8 @@ const S = {
   histOpen: null,
   renamingEx: null,     // exId being renamed in program view
   doneExs: new Set(),   // exerciseIds marked done in current workout
+  calendarYear: null,   // override calendar year (null = current year)
+  calendarMonth: null,  // override calendar month (0-11, null = current month)
 };
 
 // ─── DATABASE ─────────────────────────────────────────────────────────────────
@@ -405,6 +420,51 @@ function moveExInDay(exId, dir, dayIdx) {
   if (j < 0 || j >= day.exerciseIds.length) return;
   [day.exerciseIds[i], day.exerciseIds[j]] = [day.exerciseIds[j], day.exerciseIds[i]];
   dbSave();
+  render();
+}
+
+function askSwapExInDay(exId, dayIdx) {
+  const ex = getEx(exId);
+  const day = DB.program.days[dayIdx];
+  if (!ex || !day) return;
+
+  const el = document.createElement('div'); el.className = 'modal-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Korvaa harjoitteella</div>
+      <div style="color:var(--text2);text-align:center;font-size:13px;margin-bottom:14px">Korvataan: <strong>${esc(ex.name)}</strong></div>
+      <select id="swap-select" class="input" style="margin-bottom:14px;font-size:15px" autofocus>
+        <option value="">Valitse harjoite...</option>
+        ${DB.exercises.filter(e => e.id !== exId && !day.exerciseIds.includes(e.id)).sort((a,b)=>a.name.localeCompare(b.name)).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}
+      </select>
+      <div class="modal-btns">
+        <button class="btn btn-primary btn-full" onclick="submitSwapEx('${exId}','${day.id}')">Korvaa</button>
+        <button class="btn btn-secondary btn-full" onclick="document.querySelector('.modal-overlay').remove()">Peruuta</button>
+      </div>
+    </div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  setTimeout(() => document.getElementById('swap-select')?.focus(), 80);
+}
+
+function submitSwapEx(exId, dayId) {
+  const newExId = document.getElementById('swap-select')?.value?.trim();
+  if (!newExId) {
+    alert('Valitse korvattava harjoite');
+    return;
+  }
+
+  const day = DB.program.days.find(d => d.id === dayId);
+  if (!day) return;
+
+  const idx = day.exerciseIds.indexOf(exId);
+  if (idx === -1) return;
+
+  day.exerciseIds[idx] = newExId;
+  dbSave();
+  document.querySelector('.modal-overlay')?.remove();
+  render();
 }
 
 function getEx(id) { return DB.exercises.find(e => e.id === id); }
@@ -459,6 +519,193 @@ function logSet(exId, weight, reps, comment = '') {
 
 function delSet(idx) { if (!S.workout) return; S.workout.sets.splice(idx, 1); wSave(); render(); }
 
+function askEditHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !workout.sets[setIdx]) return;
+  const set = workout.sets[setIdx];
+  const ex = getEx(set.exerciseId);
+
+  showModal(
+    'Muokkaa sarjaa',
+    `${ex ? ex.name : '(poistettu)'} - ${fmt(set.weight)} kg × ${set.reps}`,
+    () => editHistSet(workoutId, setIdx),
+    'Muokkaa', 'Peruuta'
+  );
+}
+
+function editHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !workout.sets[setIdx]) return;
+  const set = workout.sets[setIdx];
+  const ex = getEx(set.exerciseId);
+  const exName = ex ? ex.name : '(poistettu)';
+
+  const el = document.createElement('div'); el.className = 'modal-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" style="text-align:center">Muokkaa sarjaa</div>
+      <div style="color:var(--text2);text-align:center;font-size:13px;margin-bottom:14px">${esc(exName)}</div>
+      <div class="form-row" style="padding:0 8px;gap:8px;margin-bottom:12px">
+        <div class="form-col">
+          <div class="form-lbl">Paino (kg)</div>
+          <input type="number" id="edit-weight" class="input"
+            value="${set.weight}" step="0.5" min="0" inputmode="decimal"
+            style="font-size:22px;font-weight:700;text-align:center;padding:10px 6px" autofocus>
+        </div>
+        <div class="form-col">
+          <div class="form-lbl">Toistot</div>
+          <input type="number" id="edit-reps" class="input"
+            value="${set.reps}" step="1" min="1" inputmode="numeric"
+            style="font-size:22px;font-weight:700;text-align:center;padding:10px 6px">
+        </div>
+      </div>
+      <div style="padding:0 8px;margin-bottom:14px">
+        <div class="form-lbl">Kommentti (valinnainen)</div>
+        <input type="text" id="edit-comment" class="input"
+          value="${set.comment ? esc(set.comment) : ''}" maxlength="50"
+          style="font-size:13px;padding:8px 10px">
+      </div>
+      <div class="modal-btns">
+        <button class="btn btn-primary btn-full" onclick="saveHistSet('${workoutId}',${setIdx})">Tallenna</button>
+        <button class="btn btn-secondary btn-full" onclick="document.querySelector('.modal-overlay').remove()">Peruuta</button>
+      </div>
+    </div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  setTimeout(() => document.getElementById('edit-weight')?.focus(), 80);
+}
+
+function saveHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !workout.sets[setIdx]) return;
+
+  const w = document.getElementById('edit-weight')?.value;
+  const r = document.getElementById('edit-reps')?.value;
+  const c = document.getElementById('edit-comment')?.value?.trim() || '';
+
+  if (!w || !r || +w < 0 || +r < 1) {
+    alert('Virhe: tarkista paino ja toistot');
+    return;
+  }
+
+  const set = workout.sets[setIdx];
+  set.weight = +w;
+  set.reps = +r;
+  if (c) set.comment = c;
+  else delete set.comment;
+
+  dbSave();
+  document.querySelector('.modal-overlay')?.remove();
+  render();
+}
+
+function askDelHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !workout.sets[setIdx]) return;
+  const set = workout.sets[setIdx];
+  const ex = getEx(set.exerciseId);
+  showModal(
+    'Poista sarja',
+    `Poistetaanko sarja? (${fmt(set.weight)} kg × ${set.reps})`,
+    () => delHistSet(workoutId, setIdx),
+    'Poista', 'Peruuta', true
+  );
+}
+
+function delHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+  workout.sets.splice(setIdx, 1);
+  dbSave();
+  render();
+}
+
+function askDelHistEx(workoutId, exId) {
+  const ex = getEx(exId);
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !ex) return;
+
+  const exSets = workout.sets.filter(s => s.exerciseId === exId);
+  showModal(
+    'Poista liike',
+    `Poistetaanko "${ex.name}" historiasta? (${exSets.length} sarja)`,
+    () => delHistEx(workoutId, exId),
+    'Poista', 'Peruuta', true
+  );
+}
+
+function delHistEx(workoutId, exId) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+
+  // Remove all sets for this exercise
+  workout.sets = workout.sets.filter(s => s.exerciseId !== exId);
+
+  // If no sets left, remove the entire workout
+  if (workout.sets.length === 0) {
+    DB.workouts = DB.workouts.filter(w => w.id !== workoutId);
+  }
+
+  dbSave();
+  render();
+}
+
+function startCustomWorkout() {
+  // Create a temporary freestyle day with no exercises initially
+  const freestyleDay = {
+    id: 'custom-' + Date.now(),
+    name: 'Custom',
+    exerciseIds: []
+  };
+
+  S.workout = {
+    id: uid(),
+    start: Date.now(),
+    dayId: freestyleDay.id,
+    sets: [],
+    _freestyleDay: freestyleDay
+  };
+  S.doneExs.clear();
+  wSave();
+  render();
+}
+
+function addExerciseToCustom() {
+  if (!S.workout || !S.workout._freestyleDay) return;
+
+  const el = document.createElement('div'); el.className = 'modal-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Lisää liike</div>
+      <select id="custom-add-select" class="input" style="margin-bottom:14px;font-size:15px" autofocus>
+        <option value="">Valitse liike...</option>
+        ${DB.exercises.filter(e => !S.workout._freestyleDay.exerciseIds.includes(e.id)).sort((a,b)=>a.name.localeCompare(b.name)).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}
+      </select>
+      <div class="modal-btns">
+        <button class="btn btn-primary btn-full" onclick="confirmAddExerciseToCustom()">Lisää</button>
+        <button class="btn btn-secondary btn-full" onclick="document.querySelector('.modal-overlay').remove()">Peruuta</button>
+      </div>
+    </div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  setTimeout(() => document.getElementById('custom-add-select')?.focus(), 80);
+}
+
+function confirmAddExerciseToCustom() {
+  const exId = document.getElementById('custom-add-select')?.value?.trim();
+  if (!exId || !S.workout || !S.workout._freestyleDay) return;
+
+  if (!S.workout._freestyleDay.exerciseIds.includes(exId)) {
+    S.workout._freestyleDay.exerciseIds.push(exId);
+    wSave();
+  }
+
+  document.querySelector('.modal-overlay')?.remove();
+  render();
+}
+
 function lastWorkoutSets(exId) {
   for (const w of DB.workouts) {
     const s = w.sets.filter(x => x.exerciseId === exId);
@@ -474,6 +721,8 @@ function curSets(exId) {
 
 function workoutDay() {
   if (!S.workout) return null;
+  // Check for freestyle workout first
+  if (S.workout._freestyleDay) return S.workout._freestyleDay;
   return DB.program.days.find(d => d.id === S.workout.dayId) || null;
 }
 
@@ -575,7 +824,7 @@ function vWorkoutIdle() {
 
   return `
     <div class="view-hd"><h1>Treeni</h1></div>
-    <div class="sec-lbl">Valitse päivä</div>
+    <div class="sec-lbl">Ohjelma</div>
     ${days.map(day => {
       const exs = day.exerciseIds.map(id=>getEx(id)).filter(Boolean);
       const hasEx = exs.length > 0;
@@ -593,35 +842,62 @@ function vWorkoutIdle() {
         </div>`;
     }).join('')}
 
+    <div class="sec-lbl" style="margin-top:14px">Custom</div>
+    <div class="day-start-card has-ex" onclick="startCustomWorkout()">
+      <div style="flex:1;min-width:0">
+        <div class="day-start-name">✦ Custom</div>
+        <div class="day-start-exs">Vapaa treeni — lisää liikkeet matkalla</div>
+      </div>
+      <svg class="day-start-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+
     <div class="sec-lbl" style="margin-top:20px">Treenihistoria</div>
     ${ws.length === 0 ? `
       <div style="padding:20px 16px;text-align:center;color:var(--text3);font-size:14px">Ei vielä treenejä</div>
     ` : ws.map((w,idx) => {
       const vol = Math.round(w.sets.reduce((a,s)=>a+s.weight*s.reps,0));
       const exIds = [...new Set(w.sets.map(s=>s.exerciseId))];
-      const open = S.histOpen === w.id;
       const dayName = DB.program.days.find(d=>d.id===w.dayId)?.name || '';
-      const isLatest = idx === 0;
       return `
-        <div class="hist-item" style="${isLatest?'margin:0 16px 12px;':'margin:0 16px 12px;'}">
-          <div class="hist-head" ${!isLatest?`onclick="toggleHist('${w.id}')"`:''} style="${isLatest?'cursor:default;':''}" ${isLatest?'style="pointer-events:none;"':''}>
+        <div class="hist-item" style="margin:0 16px 12px;">
+          <div class="hist-head" style="cursor:default;pointer-events:none;">
             <div>
               <div class="hist-date">${fmtDate(w.date)}${dayName?` <span style="color:var(--accent);font-size:13px;font-weight:600">${esc(dayName)}</span>`:''}</div>
               <div class="hist-meta">${w.dur} min · ${vol.toLocaleString('fi')} kg · ${exIds.length} harjoitetta</div>
             </div>
-            ${!isLatest ? `<svg class="hist-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#636366" stroke-width="2" stroke-linecap="round" style="transform:rotate(${open?90:0}deg)"><path d="M9 6l6 6-6 6"/></svg>` : ''}
           </div>
-          ${isLatest || open ? `
-            <div class="hist-body">
+          <div class="hist-body">
               ${exIds.map(id => {
                 const ex=getEx(id);
                 const ss=w.sets.filter(s=>s.exerciseId===id);
                 const exVol=Math.round(ss.reduce((a,s)=>a+s.weight*s.reps,0));
                 return `
-                  <div class="hist-ex-title">${ex?esc(ex.name):'(poistettu)'}&nbsp;<span style="color:var(--text3);font-weight:400">${exVol} kg</span></div>
-                  ${ss.map((s,i)=>`<div class="hist-set">Sarja ${i+1}: ${fmt(s.weight)} kg × ${s.reps} toistoa${s.comment ? ` · ${esc(s.comment)}` : ''}</div>`).join('')}`;
+                  <div class="hist-ex-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <div style="flex:1">
+                      <span style="color:var(--accent);font-weight:600">${ex?esc(ex.name):'(poistettu)'}</span>&nbsp;<span style="color:var(--text3);font-weight:400">${exVol} kg</span>
+                    </div>
+                    <div style="display:flex;gap:4px;flex-shrink:0">
+                      <button class="icon-btn" style="width:28px;height:28px;background:#ff453a15;color:var(--danger)" onclick="askDelHistEx('${w.id}','${id}')" title="Poista liike">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v5M14 11v5M9 6V4h6v2"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div style="display:contents">${ss.map((s,i)=>{
+                    const setKey = `${w.id}:${i}`;
+                    return `<div class="hist-set" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;gap:8px">
+                      <div style="flex:1">Sarja ${i+1}: ${fmt(s.weight)} kg × ${s.reps} toistoa${s.comment ? ` · ${esc(s.comment)}` : ''}</div>
+                      <div style="display:flex;gap:4px;flex-shrink:0">
+                        <button class="icon-btn" style="width:28px;height:28px;background:#e8e8e815;color:var(--accent)" onclick="askEditHistSet('${w.id}',${i})" title="Muokkaa">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button class="icon-btn" style="width:28px;height:28px;background:#ff453a15;color:var(--danger)" onclick="askDelHistSet('${w.id}',${i})" title="Poista">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v5M14 11v5M9 6V4h6v2"/></svg>
+                        </button>
+                      </div>
+                    </div>`;
+                  }).join('')}</div>`;
               }).join('')}
-            </div>` : ''}
+          </div>
         </div>`;
     }).join('')}
     <div style="height:20px"></div>`;
@@ -634,6 +910,7 @@ function vWorkoutActive() {
   const day = workoutDay();
   const rest = restElapsed();
   const rCls = rest===null?'g':rest<90?'g':rest<180?'y':'r';
+  const isCustom = S.workout?._freestyleDay !== undefined;
 
   return `
     <div class="w-top">
@@ -649,8 +926,16 @@ function vWorkoutActive() {
         <div class="rest-val ${rCls}" id="rest-val">${fmtSecs(rest)}</div>
         <div class="rest-sub" id="rest-sub">${restLabel(rest)}</div>
       </div>` : `<div style="height:8px"></div>`}
-    ${sorted.length ? sorted.map(ex => exCard(ex)).join('') : `
-      <div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Tällä päivällä ei ole harjoitteita</div></div>`}
+    ${isCustom ? `
+      <div style="padding:0 12px 12px">
+        <button class="btn btn-secondary btn-full btn-sm" onclick="addExerciseToCustom()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Lisää liike
+        </button>
+      </div>` : ''}
+    ${sorted.length ? sorted.map(ex => exCard(ex)).join('') : ''}
+    ${!sorted.length && !isCustom ? `
+      <div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Tällä päivällä ei ole harjoitteita</div></div>` : ''}
     <div style="height:24px"></div>`;
 }
 
@@ -674,14 +959,15 @@ function exCard(ex) {
   const dr = ''; // Always empty - user enters reps fresh
   const clr = CAT_CLR[ex.cat]||'#909090';
   return `
-    <div class="ex-card fade-in" style="${isDone?'opacity:.5;':''}" ${isDone?'data-done=1':''}>
+    <div class="ex-card fade-in" style="${isDone?'background:#252525;opacity:0.6;pointer-events:none;':''}" ${isDone?'data-done=1':''}>
       <div class="ex-head">
         <div style="flex:1;min-width:0">
-          <div class="ex-name" style="${isDone?'color:var(--text3);text-decoration:line-through;':''}">${esc(ex.name)}</div>
+          <div class="ex-name" style="${isDone?'color:#606060;text-decoration:line-through;':''}">${esc(ex.name)}</div>
         </div>
-        ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}20;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>` : ''}
-        ${!isDone ? `
-          <button class="btn btn-success btn-sm" style="font-size:11px;flex-shrink:0" onclick="markExDone('${ex.id}')">✓ Valmis</button>` : ''}
+        ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}20;color:${isDone?'#606060':clr};flex-shrink:0;">${esc(ex.cat)}</span>` : ''}
+        ${isDone ? `
+          <button class="btn btn-danger btn-sm" style="font-size:11px;flex-shrink:0;opacity:1;pointer-events:auto;" onclick="markExDone('${ex.id}')">✕ Palauta</button>` : `
+          <button class="btn btn-success btn-sm" style="font-size:11px;flex-shrink:0" onclick="markExDone('${ex.id}')">✓ Valmis</button>`}
       </div>
 
       ${lastSets.length ? `
@@ -697,7 +983,7 @@ function exCard(ex) {
 
       ${sets.length ? `
         <div class="sets-list">
-          <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.7px;font-weight:600;padding:6px 0 4px;border-top:1px solid #2d2d2d">Tänään</div>
+          <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.7px;font-weight:600;padding:6px 0 4px;border-top:1px solid var(--border)">Tänään</div>
           ${sets.map((s,li) => `
             <div class="set-row">
               <span class="set-num">${li+1}</span>
@@ -810,6 +1096,9 @@ function vProgram() {
                   <span class="list-name" onclick="startRename('${ex.id}')" style="cursor:pointer;padding:2px 4px;border-radius:4px;transition:background .15s" onmouseover="this.style.background='#ffffff08'" onmouseout="this.style.background=''">
                     ${esc(ex.name)}
                   </span>`}
+                <button class="icon-btn" style="background:#e8e8e815;color:var(--accent)" onclick="askSwapExInDay('${ex.id}',${di})" title="Korvaa harjoitteella">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64M3.51 15A9 9 0 0 0 18.36 18.36"/></svg>
+                </button>
                 <button class="icon-btn" style="background:#ff453a15;color:var(--danger)" onclick="askRemoveExFromDay('${ex.id}',${di})">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v5M14 11v5M9 6V4h6v2"/></svg>
                 </button>
@@ -870,12 +1159,12 @@ function vStats() {
   return `
     <div class="view-hd"><h1>Tilastot</h1></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 12px">
-      <div style="background:var(--surface);border-radius:var(--r);padding:14px;text-align:center">
-        <div style="font-size:26px;font-weight:700;color:var(--accent)">${DB.workouts.length}</div>
+      <div style="background:var(--surface);border-radius:var(--r);padding:14px;text-align:center;border:1px solid rgba(255,0,110,0.3);box-shadow:0 0 18px rgba(255,0,110,0.15)">
+        <div style="font-size:26px;font-weight:700;color:var(--accent);text-shadow:0 0 15px rgba(255,0,110,0.6)">${DB.workouts.length}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">treenikertaa</div>
       </div>
-      <div style="background:var(--surface);border-radius:var(--r);padding:14px;text-align:center">
-        <div style="font-size:26px;font-weight:700;color:var(--accent)">${(totalVol/1000).toFixed(1)}t</div>
+      <div style="background:var(--surface);border-radius:var(--r);padding:14px;text-align:center;border:1px solid rgba(255,0,110,0.3);box-shadow:0 0 18px rgba(255,0,110,0.15)">
+        <div style="font-size:26px;font-weight:700;color:var(--accent);text-shadow:0 0 15px rgba(255,0,110,0.6)">${(totalVol/1000).toFixed(1)}t</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">volyymi yhteensä</div>
       </div>
     </div>
@@ -892,11 +1181,11 @@ function vStats() {
         <div id="wc" style="height:200px"></div>
       </div>` : ''}
     <div class="stat-card">
-      <div class="stat-title">📅 Treenipäivät (13 viikkoa)</div>
-      <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 0"></div>
+      <div class="stat-title">📅 Treenipäivät</div>
+      <div id="calendar-container"></div>
     </div>
     <div class="stat-card">
-      <div class="stat-title">🔥 Harjoiteittainen volyymi (Top 8)</div>
+      <div class="stat-title">🔥 Harjoitteittainen volyymi (Top 8)</div>
       <div id="pie-chart" style="height:280px"></div>
     </div>
     <div class="stat-card">
@@ -906,7 +1195,7 @@ function vStats() {
     <div class="stat-card">
       <div class="stat-title">🔥 Workout Streak</div>
       <div style="padding:20px;text-align:center">
-        <div style="font-size:48px;font-weight:700;color:var(--success)">${calcStreak()}</div>
+        <div style="font-size:48px;font-weight:700;color:var(--success);text-shadow:0 0 25px rgba(0,255,65,0.7)">${calcStreak()}</div>
         <div style="font-size:13px;color:var(--text3);margin-top:8px">päivää peräkkäin</div>
       </div>
     </div>
@@ -961,29 +1250,29 @@ function vExercises() {
             const hist = volHistory(sel.id);
             const wo = DB.workouts.filter(w => w.sets.some(s => s.exerciseId === sel.id));
             return `
-              <div style="border-top:1px solid #2d2d2d;padding-top:12px">
+              <div style="border-top:1px solid var(--border);padding-top:12px">
                 <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Tilastot</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-                  <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
+                  <div style="background:var(--surface2);border:1px solid rgba(255,0,110,0.2);border-radius:8px;padding:10px;text-align:center">
                     <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Paras paino</div>
-                    <div style="font-size:22px;font-weight:700;color:var(--accent)">${prs.bw > 0 ? fmt(prs.bw) + ' kg' : '—'}</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(255,0,110,0.5)">${prs.bw > 0 ? fmt(prs.bw) + ' kg' : '—'}</div>
                   </div>
-                  <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
+                  <div style="background:var(--surface2);border:1px solid rgba(255,0,110,0.2);border-radius:8px;padding:10px;text-align:center">
                     <div style="font-size:11px;color:var(--text3);margin-bottom:4px">1RM arvio</div>
-                    <div style="font-size:22px;font-weight:700;color:var(--accent)">${prs.b1rm > 0 ? '~' + prs.b1rm + ' kg' : '—'}</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(255,0,110,0.5)">${prs.b1rm > 0 ? '~' + prs.b1rm + ' kg' : '—'}</div>
                   </div>
-                  <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
+                  <div style="background:var(--surface2);border:1px solid rgba(255,0,110,0.2);border-radius:8px;padding:10px;text-align:center">
                     <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Toistot (paras paino)</div>
-                    <div style="font-size:22px;font-weight:700;color:var(--accent)">${prs.brAtBw > 0 ? prs.brAtBw + ' kpl' : '—'}</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(255,0,110,0.5)">${prs.brAtBw > 0 ? prs.brAtBw + ' kpl' : '—'}</div>
                   </div>
-                  <div style="background:#ffffff05;border-radius:8px;padding:10px;text-align:center">
-                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Harjoituskertoja</div>
-                    <div style="font-size:22px;font-weight:700;color:var(--accent)">${wo.length}</div>
+                  <div style="background:var(--surface2);border:1px solid rgba(255,0,110,0.2);border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Harjoituskerrat</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(255,0,110,0.5)">${wo.length}</div>
                   </div>
                 </div>
               </div>
               ${hist.length >= 2 ? `
-                <div style="border-top:1px solid #2d2d2d;padding-top:12px;margin-top:12px">
+                <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
                   <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Volyymi-historia (kg)</div>
                   <div id="ex-chart" style="height:260px"></div>
                 </div>` : ''}
@@ -995,8 +1284,8 @@ function vExercises() {
                   });
                 });
                 return allSets.length >= 3 ? `
-                  <div style="border-top:1px solid #2d2d2d;padding-top:12px;margin-top:12px">
-                    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Paino vs Toistot</div>
+                  <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
+                    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Paino vs. Toistot</div>
                     <div id="scatter-${sel.id}" style="height:240px"></div>
                   </div>` : '';
               })()}
@@ -1019,187 +1308,125 @@ function vExercises() {
     <div style="height:20px"></div>`;
 }
 
-// ─── CHARTS ───────────────────────────────────────────────────────────────────
-
-function rr(ctx,x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
-}
-
-function setupCanvas(id) {
-  const c=document.getElementById(id); if (!c) return null;
-  const dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
-  c.width=rect.width*dpr; c.height=c.offsetHeight*dpr;
-  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
-  return {ctx, W:rect.width, H:c.offsetHeight};
-}
-
-function drawLine(id, data, color) {
-  const cv=setupCanvas(id); if (!cv) return;
-  const {ctx,W,H}=cv, p={t:4,r:4,b:20,l:38};
-  const cW=W-p.l-p.r, cH=H-p.t-p.b;
-  const max=Math.max(...data.map(d=>d.vol))*1.12||1;
-  ctx.strokeStyle='#2d2d2d'; ctx.lineWidth=1;
-  for (let i=0;i<=3;i++) {
-    const y=p.t+cH*(1-i/3);
-    ctx.beginPath(); ctx.moveTo(p.l,y); ctx.lineTo(p.l+cW,y); ctx.stroke();
-    ctx.fillStyle='#636366'; ctx.font='8px -apple-system';
-    ctx.textAlign='right'; ctx.textBaseline='middle';
-    ctx.fillText(Math.round((i/3)*max), p.l-4, y);
-  }
-  ctx.textBaseline='top'; ctx.textAlign='center'; ctx.fillStyle='#636366'; ctx.font='7px -apple-system';
-  data.forEach((d,i)=>ctx.fillText(d.lbl, p.l+(i/(data.length-1))*cW, H-p.b+2));
-  const pts=data.map((d,i)=>({x:p.l+(i/(data.length-1))*cW, y:p.t+cH*(1-d.vol/max)}));
-  const grad=ctx.createLinearGradient(0,p.t,0,p.t+cH);
-  grad.addColorStop(0,color+'55'); grad.addColorStop(1,color+'00');
-  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-  for (let i=1;i<pts.length;i++) { const mx=(pts[i-1].x+pts[i].x)/2; ctx.bezierCurveTo(mx,pts[i-1].y,mx,pts[i].y,pts[i].x,pts[i].y); }
-  ctx.lineTo(pts[pts.length-1].x,p.t+cH); ctx.lineTo(pts[0].x,p.t+cH); ctx.closePath();
-  ctx.fillStyle=grad; ctx.fill();
-  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-  for (let i=1;i<pts.length;i++) { const mx=(pts[i-1].x+pts[i].x)/2; ctx.bezierCurveTo(mx,pts[i-1].y,mx,pts[i].y,pts[i].x,pts[i].y); }
-  ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke();
-  pts.forEach(p2=>{
-    ctx.beginPath(); ctx.arc(p2.x,p2.y,5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
-    ctx.beginPath(); ctx.arc(p2.x,p2.y,2.5,0,Math.PI*2); ctx.fillStyle='#1c1c1e'; ctx.fill();
-  });
-}
-
-function drawBars(id, data, color) {
-  const cv=setupCanvas(id); if (!cv) return;
-  const {ctx,W,H}=cv, p={t:10,r:12,b:26,l:50};
-  const cW=W-p.l-p.r, cH=H-p.t-p.b;
-  const max=Math.max(...data.map(d=>d.vol))*1.15||1;
-  const bw=(cW/data.length)*0.65, gap=(cW/data.length)*0.35;
-  ctx.strokeStyle='#2d2d2d'; ctx.lineWidth=1;
-  ctx.fillStyle='#636366'; ctx.font='10px -apple-system';
-  ctx.textAlign='right'; ctx.textBaseline='middle';
-  for (let i=0;i<=2;i++) {
-    const y=p.t+cH*(1-i/2);
-    ctx.beginPath(); ctx.moveTo(p.l,y); ctx.lineTo(p.l+cW,y); ctx.stroke();
-    ctx.fillText(Math.round((i/2)*max), p.l-6, y);
-  }
-  data.forEach((d,i)=>{
-    const x=p.l+i*(cW/data.length)+gap/2;
-    const bh=Math.max(2,(d.vol/max)*cH), y=p.t+cH-bh;
-    const gr=ctx.createLinearGradient(0,y,0,y+bh);
-    gr.addColorStop(0,color+'ee'); gr.addColorStop(1,color+'77');
-    rr(ctx,x,y,bw,bh,Math.min(4,bw/3)); ctx.fillStyle=gr; ctx.fill();
-    ctx.fillStyle='#636366'; ctx.font='9px -apple-system'; ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText(d.lbl, x+bw/2, p.t+cH+4);
-  });
-}
-
-function drawPie(id, data, colors) {
-  const c=document.getElementById(id); if (!c) return;
-  const dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
-  c.width=rect.width*dpr; c.height=c.offsetHeight*dpr;
-  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
-  const W=rect.width, H=c.offsetHeight;
-  const cx=W/2, cy=H/2, r=Math.min(W,H)/2-20;
-  const total=data.reduce((a,d)=>a+d.val,0);
-  let angle=0;
-  data.forEach((d,i)=>{
-    const slice=(d.val/total)*Math.PI*2;
-    ctx.beginPath(); ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,r,angle,angle+slice);
-    ctx.closePath();
-    ctx.fillStyle=colors[i%colors.length];
-    ctx.fill();
-    ctx.strokeStyle='#0d0d0d'; ctx.lineWidth=2; ctx.stroke();
-    // Label
-    const lbl_angle=angle+slice/2;
-    const lx=cx+Math.cos(lbl_angle)*(r*0.7), ly=cy+Math.sin(lbl_angle)*(r*0.7);
-    ctx.fillStyle='#fff'; ctx.font='11px -apple-system'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(Math.round((d.val/total)*100)+'%',lx,ly);
-    angle+=slice;
-  });
-}
-
-function drawScatter(id, data) {
-  const c=document.getElementById(id); if (!c) return;
-  const dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
-  c.width=rect.width*dpr; c.height=c.offsetHeight*dpr;
-  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
-  const W=rect.width, H=c.offsetHeight, p={t:20,r:20,b:30,l:40};
-  const cW=W-p.l-p.r, cH=H-p.t-p.b;
-  const maxW=Math.max(...data.map(d=>d.w))*1.1 || 1;
-  const maxR=Math.max(...data.map(d=>d.r))*1.1 || 1;
-  // Grid & labels
-  ctx.strokeStyle='#2d2d2d'; ctx.lineWidth=1;
-  for(let i=0;i<=3;i++){
-    const x=p.l+cW*i/3, y=p.t+cH*(1-i/3);
-    ctx.beginPath(); ctx.moveTo(x,p.t); ctx.lineTo(x,p.t+cH); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(p.l,y); ctx.lineTo(p.l+cW,y); ctx.stroke();
-  }
-  ctx.fillStyle='#636366'; ctx.font='8px -apple-system'; ctx.textAlign='center'; ctx.textBaseline='top';
-  for(let i=0;i<=3;i++) ctx.fillText(Math.round(i/3*maxW), p.l+cW*i/3, H-p.b+2);
-  ctx.textAlign='right'; ctx.textBaseline='middle';
-  for(let i=0;i<=3;i++) ctx.fillText(Math.round(i/3*maxR), p.l-4, p.t+cH*(1-i/3));
-  // Points
-  data.forEach(d=>{
-    const x=p.l+cW*(d.w/maxW), y=p.t+cH*(1-d.r/maxR);
-    ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2);
-    ctx.fillStyle='#e8e8e8'; ctx.fill();
-    ctx.strokeStyle='#d0d0d088'; ctx.lineWidth=2; ctx.stroke();
-  });
-}
+// ─── CALENDAR ─────────────────────────────────────────────────────────────────
 
 function drawInteractiveCalendar() {
-  const grid = document.getElementById('calendar-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
+  const container = document.getElementById('calendar-container');
+  if (!container) return;
+
   const wd = workoutDays();
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // Get current month's first and last day
-  const year = today.getFullYear();
-  const month = today.getMonth();
+  // Use state-tracked year/month or current
+  let year = S.calendarYear !== null ? S.calendarYear : today.getFullYear();
+  let month = S.calendarMonth !== null ? S.calendarMonth : today.getMonth();
+
+  // Month names in Finnish
+  const monthNames = ['Tammikuu','Helmikuu','Maaliskuu','Huhtikuu','Toukokuu','Kesäkuu','Heinäkuu','Elokuu','Syyskuu','Lokakuu','Marraskuu','Joulukuu'];
+  const weekdayNames = ['Su','Ma','Ti','Ke','To','Pe','La'];
+
+  // Build navigation header and month title
+  const navHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0">
+      <button class="icon-btn" style="background:var(--surface2);width:32px;height:32px" onclick="prevCalendarMonth()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <div style="text-align:center;font-weight:600;font-size:14px;min-width:120px">${monthNames[month]} ${year}</div>
+      <button class="icon-btn" style="background:var(--surface2);width:32px;height:32px" onclick="nextCalendarMonth()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  `;
+
+  // Build weekday headers
+  const weekdaysHTML = `
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;text-align:center">
+      ${weekdayNames.map(d => `<div style="font-size:10px;font-weight:600;color:var(--text3);padding:4px 0">${d}</div>`).join('')}
+    </div>
+  `;
+
+  // Get month boundaries
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const startDate = new Date(firstDay);
   startDate.setDate(startDate.getDate() - firstDay.getDay());
 
-  // Create grid for the month (6 weeks max)
+  // Build calendar grid
+  let gridHTML = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 0">';
   let currentDate = new Date(startDate);
-  for (let i = 0; i < 42; i++) { // 6 weeks * 7 days
+  for (let i = 0; i < 42; i++) {
     const d = new Date(currentDate);
     const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
     const hasWorkout = wd.has(k);
     const isCurrentMonth = d.getMonth() === month;
 
-    const dayEl = document.createElement('div');
-    dayEl.style.cssText = `
-      aspect-ratio:1;
-      background:${isCurrentMonth ? (hasWorkout ? '#FF6B35' : '#2d2d2d') : '#1a1a1a'};
-      border-radius:4px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:11px;
-      color:${isCurrentMonth ? (hasWorkout ? '#fff' : '#909090') : '#505050'};
-      cursor:${hasWorkout && isCurrentMonth ? 'pointer' : 'default'};
-      font-weight:${hasWorkout ? '600' : '400'};
-      border:1px solid ${isCurrentMonth ? (hasWorkout ? '#FF8B55' : '#333333') : '#252525'};
-      transition:all 0.15s;
-      opacity:${isCurrentMonth ? '1' : '0.5'};
+    const bgColor = isCurrentMonth ? (hasWorkout ? '#FF006E' : '#2d1b4e') : '#12072a';
+    const textColor = isCurrentMonth ? (hasWorkout ? '#fff' : '#909090') : '#505050';
+    const cursor = hasWorkout && isCurrentMonth ? 'pointer' : 'default';
+    const fontWeight = hasWorkout ? '600' : '400';
+    const border = isCurrentMonth ? (hasWorkout ? '#FF006E' : '#4d2d7f') : '#1a0933';
+    const glow = hasWorkout && isCurrentMonth ? 'box-shadow:0 0 10px rgba(255,0,110,0.5);' : '';
+    const opacity = isCurrentMonth ? '1' : '0.4';
+
+    gridHTML += `
+      <div style="
+        aspect-ratio:1;
+        background:${bgColor};
+        border-radius:4px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:11px;
+        color:${textColor};
+        cursor:${cursor};
+        font-weight:${fontWeight};
+        border:1px solid ${border};
+        transition:all 0.15s;
+        opacity:${opacity};
+        ${glow}
+      " ${hasWorkout && isCurrentMonth ? `onmouseover="this.style.background='#FF1493';this.style.boxShadow='0 0 18px rgba(255,20,147,0.9)'" onmouseout="this.style.background='#FF006E';this.style.boxShadow='0 0 10px rgba(255,0,110,0.5)'" onclick="showWorkoutDay('${k}', new Date(${d.getTime()}))"` : ''} title="${d.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}">
+        ${d.getDate()}
+      </div>
     `;
-    dayEl.textContent = d.getDate();
-    dayEl.title = d.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-
-    if (hasWorkout && isCurrentMonth) {
-      dayEl.style.cursor = 'pointer';
-      dayEl.onmouseover = () => dayEl.style.background = '#FFB700';
-      dayEl.onmouseout = () => dayEl.style.background = '#FF6B35';
-      dayEl.onclick = () => showWorkoutDay(k, d);
-    }
-
-    grid.appendChild(dayEl);
     currentDate.setDate(currentDate.getDate() + 1);
   }
+  gridHTML += '</div>';
+
+  container.innerHTML = navHTML + weekdaysHTML + gridHTML;
+}
+
+function prevCalendarMonth() {
+  const today = new Date();
+  const year = S.calendarYear !== null ? S.calendarYear : today.getFullYear();
+  const month = S.calendarMonth !== null ? S.calendarMonth : today.getMonth();
+
+  let newMonth = month - 1;
+  let newYear = year;
+  if (newMonth < 0) {
+    newMonth = 11;
+    newYear--;
+  }
+
+  S.calendarYear = newYear;
+  S.calendarMonth = newMonth;
+  requestAnimationFrame(drawCharts);
+}
+
+function nextCalendarMonth() {
+  const today = new Date();
+  const year = S.calendarYear !== null ? S.calendarYear : today.getFullYear();
+  const month = S.calendarMonth !== null ? S.calendarMonth : today.getMonth();
+
+  let newMonth = month + 1;
+  let newYear = year;
+  if (newMonth > 11) {
+    newMonth = 0;
+    newYear++;
+  }
+
+  S.calendarYear = newYear;
+  S.calendarMonth = newMonth;
+  requestAnimationFrame(drawCharts);
 }
 
 function showWorkoutDay(dateKey, date) {
@@ -1214,7 +1441,7 @@ function showWorkoutDay(dateKey, date) {
     <div style="font-size:18px;font-weight:700;margin-bottom:16px">${date.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>`;
 
   workouts.forEach(w => {
-    content += `<div style="margin-bottom:16px;background:#1a1a1a;padding:12px;border-radius:8px">
+    content += `<div style="margin-bottom:16px;background:var(--surface2);padding:12px;border-radius:8px;border:1px solid var(--border)">
       <div style="font-size:13px;color:var(--text3);margin-bottom:8px">⏱ ${fmtDur.call({workout: w})}</div>`;
 
     w.sets.forEach(s => {
@@ -1246,10 +1473,10 @@ function drawCharts() {
       chart.setOption({
         responsive:true,
         grid:{left:40,right:20,top:10,bottom:30},
-        xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11}},
-        yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#FF6B35'},smooth:true}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#FF6B35',textStyle:{color:'#fff'}},
+        xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11,color:'#909090'},axisLine:{lineStyle:{color:'#4d2d7f'}},splitLine:{lineStyle:{color:'#2d1b4e'}}},
+        yAxis:{type:'value',axisLabel:{fontSize:11,color:'#909090'},axisLine:{lineStyle:{color:'#4d2d7f'}},splitLine:{lineStyle:{color:'#2d1b4e'}}},
+        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#FF006E',borderRadius:[4,4,0,0]},barMaxWidth:40}],
+        tooltip:{backgroundColor:'rgba(15,4,21,0.95)',borderColor:'#FF006E',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1279,7 +1506,7 @@ function drawCharts() {
           itemStyle:{borderColor:'#000000',borderWidth:2},
           label:{fontSize:11,color:'#fff'}
         }],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#e8e8e8',textStyle:{color:'#fff'}},
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#FF006E',textStyle:{color:'#fff'}},
         color:colors,
         animation:true
       });
@@ -1302,10 +1529,10 @@ function drawCharts() {
       chart.setOption({
         responsive:true,
         grid:{left:40,right:20,top:10,bottom:30},
-        xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11}},
-        yAxis:{type:'value',axisLabel:{fontSize:11}},
-        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#00ff41'}}],
-        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#00ff41',textStyle:{color:'#fff'}},
+        xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11,color:'#909090'},axisLine:{lineStyle:{color:'#4d2d7f'}},splitLine:{lineStyle:{color:'#2d1b4e'}}},
+        yAxis:{type:'value',axisLabel:{fontSize:11,color:'#909090'},axisLine:{lineStyle:{color:'#4d2d7f'}},splitLine:{lineStyle:{color:'#2d1b4e'}}},
+        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#00FF41',borderRadius:[4,4,0,0]},barMaxWidth:40}],
+        tooltip:{backgroundColor:'rgba(15,4,21,0.95)',borderColor:'#00FF41',textStyle:{color:'#fff'}},
         animation:true
       });
       setTimeout(()=>chart.resize(),0);
@@ -1339,7 +1566,10 @@ function showModal(title, sub, onOk, okTxt='Kyllä', cancelTxt='Peruuta', danger
 // ─── ACTIONS ──────────────────────────────────────────────────────────────────
 
 function nav(view) {
-  S.view=view; S.editMode=false; S.addExForm=false; S.addSetFor=null; render();
+  S.view=view; S.editMode=false; S.addExForm=false; S.addSetFor=null;
+  // Reset calendar to current month when leaving stats
+  if (view !== 'stats') { S.calendarYear = null; S.calendarMonth = null; }
+  render();
 }
 
 function selProgDay(i) { S.progDayIdx=i; S.addExForm=false; S.editMode=false; render(); }
@@ -1539,17 +1769,17 @@ function render() {
           chart.setOption({
             responsive: true,
             grid: {left: 40, right: 20, top: 10, bottom: 30},
-            xAxis: {type: 'category', data: hist.map(d => d.lbl), axisLabel: {fontSize: 11}},
-            yAxis: {type: 'value', axisLabel: {fontSize: 11}},
+            xAxis: {type: 'category', data: hist.map(d => d.lbl), axisLabel: {fontSize: 11, color: '#909090'}, axisLine: {lineStyle: {color: '#4d2d7f'}}, splitLine: {lineStyle: {color: '#2d1b4e'}}},
+            yAxis: {type: 'value', axisLabel: {fontSize: 11, color: '#909090'}, axisLine: {lineStyle: {color: '#4d2d7f'}}, splitLine: {lineStyle: {color: '#2d1b4e'}}},
             series: [{
               data: hist.map(d => d.vol),
               type: 'line',
               smooth: true,
-              itemStyle: {color: '#FF6B35'},
-              areaStyle: {color: 'rgba(255, 107, 53, 0.5)'},
-              lineStyle: {width: 3, color: '#FF6B35'}
+              itemStyle: {color: '#FF006E'},
+              areaStyle: {color: 'rgba(255, 0, 110, 0.25)'},
+              lineStyle: {width: 3, color: '#FF006E'}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF6B35', textStyle: {color: '#fff'}},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF006E', textStyle: {color: '#fff'}},
             animation: true
           });
           chart.resize();
@@ -1569,16 +1799,16 @@ function render() {
           chart.setOption({
             responsive: true,
             grid: {left: 40, right: 20, top: 10, bottom: 30},
-            xAxis: {type: 'value', name: 'Paino (kg)', nameTextStyle: {fontSize: 11}, axisLabel: {fontSize: 11}},
-            yAxis: {type: 'value', name: 'Toistot', nameTextStyle: {fontSize: 11}, axisLabel: {fontSize: 11}},
+            xAxis: {type: 'value', name: 'Paino (kg)', nameTextStyle: {fontSize: 11, color: '#909090'}, axisLabel: {fontSize: 11, color: '#909090'}, axisLine: {lineStyle: {color: '#4d2d7f'}}, splitLine: {lineStyle: {color: '#2d1b4e'}}},
+            yAxis: {type: 'value', name: 'Toistot', nameTextStyle: {fontSize: 11, color: '#909090'}, axisLabel: {fontSize: 11, color: '#909090'}, axisLine: {lineStyle: {color: '#4d2d7f'}}, splitLine: {lineStyle: {color: '#2d1b4e'}}},
             series: [{
               data: allSets,
               type: 'scatter',
               symbolSize: 14,
-              itemStyle: {color: '#FF6B35', opacity: 0.9},
-              emphasis: {itemStyle: {color: '#FFB700', borderColor: '#fff', borderWidth: 2}}
+              itemStyle: {color: '#FF006E', opacity: 0.9},
+              emphasis: {itemStyle: {color: '#00D9FF', borderColor: '#fff', borderWidth: 2}}
             }],
-            tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF6B35', textStyle: {color: '#fff'}, formatter: '{c}'},
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF006E', textStyle: {color: '#fff'}, formatter: '{c}'},
             animation: true
           });
           chart.resize();
@@ -1636,11 +1866,11 @@ function init() {
   try {
     const ic=document.createElement('canvas'); ic.width=ic.height=192;
     const cx=ic.getContext('2d');
-    cx.fillStyle='#0d0d0d'; cx.fillRect(0,0,192,192);
+    cx.fillStyle='#0f0415'; cx.fillRect(0,0,192,192);
     // Draw dumbbell icon
-    cx.strokeStyle='#e8e8e8'; cx.lineWidth=8; cx.lineCap='round';
+    cx.strokeStyle='#FF006E'; cx.lineWidth=8; cx.lineCap='round';
     // Left weight
-    cx.fillStyle='#e8e8e8'; cx.fillRect(30,75,30,42); cx.fillRect(30,70,30,6);
+    cx.fillStyle='#FF006E'; cx.fillRect(30,75,30,42); cx.fillRect(30,70,30,6);
     // Bar
     cx.beginPath(); cx.moveTo(65,96); cx.lineTo(127,96); cx.stroke();
     // Right weight
@@ -1648,7 +1878,7 @@ function init() {
     const li=document.createElement('link'); li.rel='apple-touch-icon'; li.href=ic.toDataURL();
     document.head.appendChild(li);
     const m={name:'Kehonrakennus',short_name:'Treeni',start_url:'./',display:'standalone',
-      background_color:'#0d0d0d',theme_color:'#0d0d0d',
+      background_color:'#0f0415',theme_color:'#0f0415',
       icons:[{src:ic.toDataURL(),sizes:'192x192',type:'image/png'}]};
     const bl=new Blob([JSON.stringify(m)],{type:'application/json'});
     const lk=document.createElement('link'); lk.rel='manifest'; lk.href=URL.createObjectURL(bl);
