@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Treeni">
+<meta name="theme-color" content="#0f0415">
+<title>Kehonrakennus</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+:root{
+  --bg:#0f0415;--surface:#1a0933;--surface2:#2d1b4e;
+  --accent:#FF006E;--accent2:#00D9FF;--text:#fff;--text2:#e0e0e0;--text3:#909090;
+  --success:#00FF41;--warn:#FFD700;--danger:#FF1493;
+  --border:#4d2d7f;--r:12px;
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow:hidden;background:var(--bg)}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  background-color:var(--bg);
+  background:linear-gradient(135deg, var(--bg) 0%, #1a0450 100%);color:var(--text);height:100%;overflow:hidden;
+  -webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;
+}
+
+/* LAYOUT */
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--sat)}
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+#tab-bar{
+  display:flex;
+  background:var(--surface);
+  border-top:2px solid var(--accent);
+  padding-bottom:max(12px, var(--sab));
+  flex-shrink:0;
+  box-shadow:0 -4px 20px rgba(255, 0, 110, 0.3);
+  background-origin:padding-box;
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 0;background:none;border:none;color:var(--text3);
+  font-size:10px;font-weight:500;gap:3px;cursor:pointer;transition:all .15s;
+}
+.tab.active{color:var(--accent);text-shadow:0 0 10px rgba(255, 0, 110, 0.8)}
+.tab svg{width:22px;height:22px;flex-shrink:0}
+
+/* CARDS */
+.card{background:var(--surface);border-radius:var(--r);padding:16px;margin:0 16px 12px;border:1px solid rgba(255, 0, 110, 0.2);box-shadow:0 0 15px rgba(255, 0, 110, 0.1)}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:13px 20px;border-radius:var(--r);border:none;
+  font-size:15px;font-weight:600;cursor:pointer;gap:6px;
+  transition:all .15s;-webkit-appearance:none;
+}
+.btn-success{background:var(--success);color:#000;box-shadow:0 0 15px rgba(0, 255, 65, 0.4)}
+.btn-success:active{box-shadow:0 0 25px rgba(0, 255, 65, 0.6)}
+.btn:active{opacity:.7;transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 0 20px rgba(255, 0, 110, 0.5);border:1px solid var(--accent)}
+.btn-primary:active{box-shadow:0 0 30px rgba(255, 0, 110, 0.8)}
+.btn-secondary{background:var(--surface2);color:var(--accent);border:1px solid var(--accent);box-shadow:0 0 10px rgba(255, 0, 110, 0.3)}
+.btn-secondary:active{box-shadow:0 0 20px rgba(255, 0, 110, 0.6)}
+.btn-danger{background:#FF1493aa;color:#fff;border:1px solid var(--danger);box-shadow:0 0 15px rgba(255, 20, 147, 0.5)}
+.btn-full{width:100%}
+.btn-sm{padding:9px 14px;font-size:13px;border-radius:10px}
+.icon-btn{
+  width:34px;height:34px;padding:0;border-radius:8px;
+  background:var(--surface2);border:1px solid rgba(255, 0, 110, 0.3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text2);transition:all .15s;flex-shrink:0;
+}
+.icon-btn:active{opacity:.6;box-shadow:0 0 15px rgba(255, 0, 110, 0.5)}
+
+/* INPUTS */
+.input{
+  background:var(--surface2);border:2px solid var(--border);border-radius:10px;
+  padding:12px 14px;font-size:16px;color:var(--text);
+  outline:none;width:100%;transition:border-color .3s,box-shadow .3s;-webkit-appearance:none;
+  box-shadow:0 0 0 0 rgba(255, 0, 110, 0);
+}
+.input:focus{border-color:var(--accent);box-shadow:0 0 15px rgba(255, 0, 110, 0.6)}
+input[type=number].input{-moz-appearance:textfield}
+input[type=number].input::-webkit-outer-spin-button,
+input[type=number].input::-webkit-inner-spin-button{-webkit-appearance:none}
+select.input{
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23636366' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;
+}
+
+/* BADGE */
+.badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600}
+
+/* SPLIT SELECTOR */
+.split-row{
+  display:flex;gap:6px;padding:0 16px 14px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.split-row::-webkit-scrollbar{display:none}
+.split-pill{
+  flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text3);
+  font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;
+}
+.split-pill.active{background:var(--accent);color:#fff;box-shadow:0 0 15px rgba(255, 0, 110, 0.6)}
+.split-pill:active{opacity:.7}
+
+/* DAY TABS */
+.day-tabs{
+  display:flex;gap:0;border-bottom:1px solid var(--border);
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.day-tabs::-webkit-scrollbar{display:none}
+.day-tab{
+  flex-shrink:0;padding:11px 20px;border:none;background:none;
+  color:var(--text3);font-size:14px;font-weight:600;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;
+  position:relative;bottom:-1px;
+}
+.day-tab.active{color:var(--accent);border-bottom-color:var(--accent);text-shadow:0 0 10px rgba(255, 0, 110, 0.6)}
+
+/* WORKOUT HEADER */
+.w-top{
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10;
+  box-shadow:0 2px 15px rgba(255,0,110,0.12);
+}
+.w-dur{font-size:13px;color:var(--text3);font-variant-numeric:tabular-nums}
+.w-day-badge{
+  font-size:12px;font-weight:700;color:var(--accent);
+  background:rgba(255,0,110,0.15);padding:3px 10px;border-radius:20px;
+  border:1px solid rgba(255,0,110,0.35);text-shadow:0 0 8px rgba(255,0,110,0.5);
+}
+
+/* REST TIMER */
+#rest-wrap{text-align:center;padding:18px 16px 10px}
+.rest-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:2px}
+.rest-val{
+  font-size:62px;font-weight:200;letter-spacing:-3px;
+  font-variant-numeric:tabular-nums;transition:all .6s;line-height:1;text-shadow:0 0 20px currentColor;
+}
+.rest-val.g{color:var(--success);text-shadow:0 0 20px rgba(0, 255, 65, 0.6)}
+.rest-val.y{color:var(--warn);text-shadow:0 0 20px rgba(255, 215, 0, 0.6)}
+.rest-val.r{color:var(--danger);text-shadow:0 0 20px rgba(255, 20, 147, 0.6)}
+.rest-sub{font-size:12px;color:var(--text3);margin-top:4px}
+
+/* EXERCISE CARDS */
+.ex-card{background:var(--surface);border-radius:var(--r);margin:0 16px 12px;overflow:hidden;border:1px solid rgba(255, 0, 110, 0.2);box-shadow:0 0 10px rgba(255, 0, 110, 0.1)}
+.ex-head{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px}
+.ex-name{font-size:16px;font-weight:600;flex:1;min-width:0;line-height:1.2}
+.ex-prev{font-size:12px;color:var(--text3);margin-top:3px}
+.sets-list{padding:0 16px 2px}
+.set-row{display:flex;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:14px;gap:8px}
+.set-num{color:var(--text3);font-size:11px;width:18px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.set-info{flex:1;font-weight:500}
+.set-del{
+  width:26px;height:26px;border-radius:6px;border:none;
+  background:#ff453a15;color:var(--danger);font-size:13px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+}
+.set-del:active{opacity:.6}
+.add-form{padding:10px 12px 12px}
+.add-form-inner{background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border);box-shadow:0 0 12px rgba(255,0,110,0.08)}
+.form-row{display:flex;gap:8px;margin-bottom:10px}
+.form-col{flex:1}
+.form-lbl{font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:500}
+.add-btn-row{padding:0 12px 12px;display:flex;gap:8px}
+
+/* PROGRAM LIST */
+.list-wrap{margin:0 16px 12px;background:var(--surface);border-radius:var(--r);overflow:hidden;border:1px solid rgba(255, 0, 110, 0.2);box-shadow:0 0 15px rgba(255, 0, 110, 0.1)}
+.list-item{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border)}
+.list-item:last-child{border-bottom:none}
+.list-name{flex:1;font-size:15px;font-weight:500;min-width:0}
+.order-btns{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.order-btn{
+  width:26px;height:22px;border-radius:5px;border:none;
+  background:var(--surface2);color:var(--text2);font-size:11px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.order-btn:disabled{opacity:.2;cursor:default}
+.order-btn:active:not(:disabled){opacity:.6}
+
+/* STATS */
+.stat-card{background:var(--surface);border-radius:var(--r);margin:0 12px 20px;padding:18px;overflow:visible;border:1px solid rgba(255, 0, 110, 0.2);box-shadow:0 0 15px rgba(255, 0, 110, 0.1)}
+.stat-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;font-weight:500}
+canvas{display:block;width:100%;height:auto}
+.pr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
+.pr-row:last-child{border-bottom:none}
+.pr-lbl{color:var(--text2)}
+.pr-val{font-weight:700;color:var(--accent)}
+
+/* HISTORY */
+.hist-item{margin:0 16px 12px;background:var(--surface);border-radius:var(--r);overflow:hidden;border:1px solid rgba(0, 217, 255, 0.2);box-shadow:0 0 10px rgba(0, 217, 255, 0.1)}
+.hist-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background 0.15s}
+.hist-head:hover{background:rgba(255,0,110,0.08)}
+.hist-date{font-weight:600;font-size:15px}
+.hist-meta{font-size:12px;color:var(--text3);margin-top:2px}
+.hist-chevron{transition:transform 0.2s;flex-shrink:0;color:var(--text3)}
+.hist-body{padding:4px 16px 14px}
+.hist-ex-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin:10px 0 4px}
+.hist-set{font-size:13px;color:var(--text2);padding:2px 0}
+
+/* HEADERS */
+.view-hd{padding:16px 16px 6px;display:flex;align-items:center;justify-content:space-between}
+.view-hd h1{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.sec-lbl{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:12px 16px 6px;font-weight:500}
+
+/* START SCREEN DAY CARDS */
+.day-start-card{
+  background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border-radius:var(--r);margin:0 16px 10px;
+  padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  transition:all .15s;border:1.5px solid rgba(255, 0, 110, 0.3);
+  box-shadow:0 0 15px rgba(255, 0, 110, 0.15);
+}
+.day-start-card:active{opacity:.75;transform:scale(.98);box-shadow:0 0 30px rgba(255, 0, 110, 0.5)}
+.day-start-card.has-ex{border-color:var(--accent);box-shadow:0 0 20px rgba(255,0,110,0.25)}
+.day-start-name{font-size:17px;font-weight:700}
+.day-start-exs{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.4}
+.day-start-arrow{color:var(--text3);flex-shrink:0}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 32px;color:var(--text3)}
+.empty-ico{font-size:44px;margin-bottom:12px}
+.empty-txt{font-size:15px;line-height:1.5}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);
+  display:flex;align-items:flex-end;z-index:50;
+  animation:fadeOvr .15s ease;
+  backdrop-filter:blur(4px);
+}
+@keyframes fadeOvr{from{opacity:0}to{opacity:1}}
+.modal-sheet{
+  background:linear-gradient(180deg, var(--surface2) 0%, var(--surface) 100%);
+  border-radius:16px 16px 0 0;width:100%;
+  padding:20px 20px calc(20px + var(--sab));animation:slideUp .2s ease;
+  border:1px solid rgba(255, 0, 110, 0.35);border-bottom:none;
+  box-shadow:0 -10px 50px rgba(255, 0, 110, 0.25);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+.modal-handle{width:36px;height:4px;background:rgba(255,0,110,0.4);border-radius:2px;margin:0 auto 18px;box-shadow:0 0 8px rgba(255,0,110,0.5)}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:6px;text-align:center}
+.modal-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:20px;line-height:1.4}
+.modal-btns{display:flex;flex-direction:column;gap:10px}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .2s ease}
+::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="content"></div>
+  <nav id="tab-bar">
+    <button class="tab" data-view="workout" onclick="nav('workout')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6.5 6.5h11M6.5 11.5h11M6.5 16.5h6"/>
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+      </svg>
+      Treeni
+    </button>
+    <button class="tab" data-view="program" onclick="nav('program')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <path d="M12 12v4M10 14h4"/>
+      </svg>
+      Ohjelma
+    </button>
+    <button class="tab" data-view="stats" onclick="nav('stats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 20V10M12 20V4M6 20v-6"/>
+      </svg>
+      Tilastot
+    </button>
+    <button class="tab" data-view="exercises" onclick="nav('exercises')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20z"/>
+      </svg>
+      Liikkeet
+    </button>
+  </nav>
+</div>
+
+<script>
+'use strict';
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+
+const CATS = ['Rinta','Selkä','Olkapäät','Hauis','Ojentaja','Jalat','Pakara','Vatsa','Cardio','Muu'];
+const CAT_CLR = {
+  Rinta:'#FF006E',Selkä:'#00D9FF',Olkapäät:'#9D4EDD',
+  Hauis:'#00FF41',Ojentaja:'#FFD700',Jalat:'#FF6B6B',
+  Pakara:'#FF69B4',Vatsa:'#00FFFF',Cardio:'#FF1493',Muu:'#909090'
+};
+const DAY_NAMES = ['A','B','C','D','E','F'];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+
+const S = {
+  view: 'workout',
+  workout: null,        // {id, start, dayId, sets:[{exerciseId,weight,reps,ts}]}
+  progDayIdx: 0,        // which day tab is open in program view
+  editMode: false,
+  addExForm: false,
+  addSetFor: null,
+  drafts: {},
+  statsEx: null,
+  histOpen: null,
+  renamingEx: null,     // exId being renamed in program view
+  doneExs: new Set(),   // exerciseIds marked done in current workout
+  histOpen: null,       // which workout ID is expanded in history (null = all collapsed)
+  calendarYear: null,   // override calendar year (null = current year)
+  calendarMonth: null,  // override calendar month (0-11, null = current month)
+};
+
+// ─── DATABASE ─────────────────────────────────────────────────────────────────
+
+let DB = {
+  exercises: [],   // [{id, name, cat}]
+  program: {
+    days: []       // [{id, name, exerciseIds:[]}]
+  },
+  workouts: []
+};
+
+function dbLoad() {
+  try {
+    const raw = localStorage.getItem('kb3');
+    if (raw) {
+      const saved = JSON.parse(raw);
+      // Migrate old structure (kb2 had DB.order instead of DB.program.days)
+      if (saved.order && !saved.program) {
+        saved.program = { days: [{ id: uid(), name: 'Päivä A', exerciseIds: [...saved.order] }] };
+        delete saved.order;
+      }
+      DB = { ...DB, ...saved };
+      if (!DB.program) DB.program = { days: [] };
+      if (!DB.program.days) DB.program.days = [];
+    } else {
+      // Try migrating from old key
+      const old = localStorage.getItem('kb2');
+      if (old) {
+        const saved = JSON.parse(old);
+        DB.exercises = saved.exercises || [];
+        const order = saved.order || [];
+        if (order.length) {
+          DB.program.days = [{ id: uid(), name: 'Päivä A', exerciseIds: order }];
+        }
+        DB.workouts = saved.workouts || [];
+      }
+    }
+  } catch(e) {}
+
+  try {
+    const w = localStorage.getItem('kb3_w');
+    if (w) S.workout = JSON.parse(w);
+  } catch(e) {}
+}
+
+function dbSave() {
+  try { localStorage.setItem('kb3', JSON.stringify(DB)); } catch(e) {}
+}
+function wSave() {
+  try {
+    if (S.workout) localStorage.setItem('kb3_w', JSON.stringify(S.workout));
+    else localStorage.removeItem('kb3_w');
+  } catch(e) {}
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+// ─── PROGRAM / SPLIT OPS ──────────────────────────────────────────────────────
+
+function setSplitCount(n) {
+  const cur = DB.program.days.length;
+  if (n === cur) return;
+  if (n > cur) {
+    for (let i = cur; i < n; i++) {
+      DB.program.days.push({ id: uid(), name: `Päivä ${DAY_NAMES[i]||i+1}`, exerciseIds: [] });
+    }
+    dbSave(); render();
+  } else {
+    // Check if days being removed have exercises
+    const removing = DB.program.days.slice(n);
+    const hasEx = removing.some(d => d.exerciseIds.length > 0);
+    const names = removing.map(d => d.name).join(', ');
+    if (hasEx) {
+      showModal(
+        'Poista päivät?',
+        `${names} sisältää harjoitteita. Poistetaanko ne?`,
+        () => { DB.program.days = DB.program.days.slice(0, n); if (S.progDayIdx >= n) S.progDayIdx = n-1; dbSave(); render(); },
+        'Poista', 'Peruuta', true
+      );
+    } else {
+      DB.program.days = DB.program.days.slice(0, n);
+      if (S.progDayIdx >= n) S.progDayIdx = n-1;
+      dbSave(); render();
+    }
+  }
+}
+
+function curDay() { return DB.program.days[S.progDayIdx] || null; }
+
+function addExToDay(name, cat, dayIdx) {
+  const ex = { id: uid(), name: name.trim(), cat };
+  DB.exercises.push(ex);
+  const day = DB.program.days[dayIdx];
+  if (day) day.exerciseIds.push(ex.id);
+  dbSave();
+}
+
+function removeExFromDay(exId, dayIdx) {
+  const day = DB.program.days[dayIdx];
+  if (day) day.exerciseIds = day.exerciseIds.filter(id => id !== exId);
+  dbSave();
+}
+
+function moveExInDay(exId, dir, dayIdx) {
+  const day = DB.program.days[dayIdx];
+  if (!day) return;
+  const i = day.exerciseIds.indexOf(exId), j = i + dir;
+  if (j < 0 || j >= day.exerciseIds.length) return;
+  [day.exerciseIds[i], day.exerciseIds[j]] = [day.exerciseIds[j], day.exerciseIds[i]];
+  dbSave();
+  render();
+}
+
+function askSwapExInDay(exId, dayIdx) {
+  const ex = getEx(exId);
+  const day = DB.program.days[dayIdx];
+  if (!ex || !day) return;
+
+  const el = document.createElement('div'); el.className = 'modal-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Korvaa harjoitteella</div>
+      <div style="color:var(--text2);text-align:center;font-size:13px;margin-bottom:14px">Korvataan: <strong>${esc(ex.name)}</strong></div>
+      <select id="swap-select" class="input" style="margin-bottom:14px;font-size:15px" autofocus>
+        <option value="">Valitse harjoite...</option>
+        ${DB.exercises.filter(e => e.id !== exId && !day.exerciseIds.includes(e.id)).sort((a,b)=>a.name.localeCompare(b.name)).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}
+      </select>
+      <div class="modal-btns">
+        <button class="btn btn-primary btn-full" onclick="submitSwapEx('${exId}','${day.id}')">Korvaa</button>
+        <button class="btn btn-secondary btn-full" onclick="document.querySelector('.modal-overlay').remove()">Peruuta</button>
+      </div>
+    </div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  setTimeout(() => document.getElementById('swap-select')?.focus(), 80);
+}
+
+function submitSwapEx(exId, dayId) {
+  const newExId = document.getElementById('swap-select')?.value?.trim();
+  if (!newExId) {
+    alert('Valitse korvattava harjoite');
+    return;
+  }
+
+  const day = DB.program.days.find(d => d.id === dayId);
+  if (!day) return;
+
+  const idx = day.exerciseIds.indexOf(exId);
+  if (idx === -1) return;
+
+  day.exerciseIds[idx] = newExId;
+  dbSave();
+  document.querySelector('.modal-overlay')?.remove();
+  render();
+}
+
+function getEx(id) { return DB.exercises.find(e => e.id === id); }
+
+function dayExercises(dayIdx) {
+  const day = DB.program.days[dayIdx];
+  if (!day) return [];
+  return day.exerciseIds.map(id => getEx(id)).filter(Boolean);
+}
+
+// ─── WORKOUT OPS ──────────────────────────────────────────────────────────────
+
+function confirmStartWorkout(dayId) {
+  const day = DB.program.days.find(d => d.id === dayId);
+  if (!day) return;
+  showModal(
+    'Aloita treeni',
+    `Aloitetaanko ${esc(day.name)}?`,
+    () => startWorkout(dayId),
+    'Aloita', 'Peruuta'
+  );
+}
+
+function startWorkout(dayId) {
+  S.workout = { id: uid(), start: Date.now(), dayId, sets: [] };
+  S.doneExs.clear();
+  wSave(); render();
+}
+
+function endWorkout(save) {
+  if (save && S.workout?.sets.length) {
+    DB.workouts.unshift({
+      id: S.workout.id,
+      date: S.workout.start,
+      dur: Math.max(1, Math.round((Date.now() - S.workout.start) / 60000)),
+      dayId: S.workout.dayId,
+      sets: S.workout.sets
+    });
+    dbSave();
+  }
+  S.workout = null; S.drafts = {}; S.addSetFor = null; wSave(); render();
+}
+
+function logSet(exId, weight, reps, comment = '') {
+  if (!S.workout) return;
+  const set = { exerciseId: exId, weight: +weight, reps: +reps, ts: Date.now() };
+  if (comment) set.comment = comment;
+  S.workout.sets.push(set);
+  S.drafts[exId] = { weight, reps: '', comment: '' }; // Keep weight, clear reps and comment for next set
+  S.addSetFor = null; wSave(); render();
+}
+
+function delSet(idx) { if (!S.workout) return; S.workout.sets.splice(idx, 1); wSave(); render(); }
+
+function askEditHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !workout.sets[setIdx]) return;
+  const set = workout.sets[setIdx];
+  const ex = getEx(set.exerciseId);
+
+  showModal(
+    'Muokkaa sarjaa',
+    `${ex ? ex.name : '(poistettu)'} - ${fmt(set.weight)} kg × ${set.reps}`,
+    () => editHistSet(workoutId, setIdx),
+    'Muokkaa', 'Peruuta'
+  );
+}
+
+function editHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !workout.sets[setIdx]) return;
+  const set = workout.sets[setIdx];
+  const ex = getEx(set.exerciseId);
+  const exName = ex ? ex.name : '(poistettu)';
+
+  const el = document.createElement('div'); el.className = 'modal-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" style="text-align:center">Muokkaa sarjaa</div>
+      <div style="color:var(--text2);text-align:center;font-size:13px;margin-bottom:14px">${esc(exName)}</div>
+      <div class="form-row" style="padding:0 8px;gap:8px;margin-bottom:12px">
+        <div class="form-col">
+          <div class="form-lbl">Paino (kg)</div>
+          <input type="number" id="edit-weight" class="input"
+            value="${set.weight}" step="0.5" min="0" inputmode="decimal"
+            style="font-size:22px;font-weight:700;text-align:center;padding:10px 6px" autofocus>
+        </div>
+        <div class="form-col">
+          <div class="form-lbl">Toistot</div>
+          <input type="number" id="edit-reps" class="input"
+            value="${set.reps}" step="1" min="1" inputmode="numeric"
+            style="font-size:22px;font-weight:700;text-align:center;padding:10px 6px">
+        </div>
+      </div>
+      <div style="padding:0 8px;margin-bottom:14px">
+        <div class="form-lbl">Kommentti (valinnainen)</div>
+        <input type="text" id="edit-comment" class="input"
+          value="${set.comment ? esc(set.comment) : ''}" maxlength="50"
+          style="font-size:13px;padding:8px 10px">
+      </div>
+      <div class="modal-btns">
+        <button class="btn btn-primary btn-full" onclick="saveHistSet('${workoutId}',${setIdx})">Tallenna</button>
+        <button class="btn btn-secondary btn-full" onclick="document.querySelector('.modal-overlay').remove()">Peruuta</button>
+      </div>
+    </div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  setTimeout(() => document.getElementById('edit-weight')?.focus(), 80);
+}
+
+function saveHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !workout.sets[setIdx]) return;
+
+  const w = document.getElementById('edit-weight')?.value;
+  const r = document.getElementById('edit-reps')?.value;
+  const c = document.getElementById('edit-comment')?.value?.trim() || '';
+
+  if (!w || !r || +w < 0 || +r < 1) {
+    alert('Virhe: tarkista paino ja toistot');
+    return;
+  }
+
+  const set = workout.sets[setIdx];
+  set.weight = +w;
+  set.reps = +r;
+  if (c) set.comment = c;
+  else delete set.comment;
+
+  dbSave();
+  document.querySelector('.modal-overlay')?.remove();
+  render();
+}
+
+function askDelHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !workout.sets[setIdx]) return;
+  const set = workout.sets[setIdx];
+  const ex = getEx(set.exerciseId);
+  showModal(
+    'Poista sarja',
+    `Poistetaanko sarja? (${fmt(set.weight)} kg × ${set.reps})`,
+    () => delHistSet(workoutId, setIdx),
+    'Poista', 'Peruuta', true
+  );
+}
+
+function delHistSet(workoutId, setIdx) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+  workout.sets.splice(setIdx, 1);
+  dbSave();
+  render();
+}
+
+function askDelHistEx(workoutId, exId) {
+  const ex = getEx(exId);
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout || !ex) return;
+
+  const exSets = workout.sets.filter(s => s.exerciseId === exId);
+  showModal(
+    'Poista liike',
+    `Poistetaanko "${ex.name}" historiasta? (${exSets.length} sarja)`,
+    () => delHistEx(workoutId, exId),
+    'Poista', 'Peruuta', true
+  );
+}
+
+function delHistEx(workoutId, exId) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+
+  // Remove all sets for this exercise
+  workout.sets = workout.sets.filter(s => s.exerciseId !== exId);
+
+  // If no sets left, remove the entire workout
+  if (workout.sets.length === 0) {
+    DB.workouts = DB.workouts.filter(w => w.id !== workoutId);
+  }
+
+  dbSave();
+  render();
+}
+
+function startCustomWorkout() {
+  // Create a temporary freestyle day with no exercises initially
+  const freestyleDay = {
+    id: 'custom-' + Date.now(),
+    name: 'Custom',
+    exerciseIds: []
+  };
+
+  S.workout = {
+    id: uid(),
+    start: Date.now(),
+    dayId: freestyleDay.id,
+    sets: [],
+    _freestyleDay: freestyleDay
+  };
+  S.doneExs.clear();
+  wSave();
+  render();
+}
+
+function addExerciseToCustom() {
+  if (!S.workout || !S.workout._freestyleDay) return;
+
+  const el = document.createElement('div'); el.className = 'modal-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Lisää liike</div>
+      <select id="custom-add-select" class="input" style="margin-bottom:14px;font-size:15px" autofocus>
+        <option value="">Valitse liike...</option>
+        ${DB.exercises.filter(e => !S.workout._freestyleDay.exerciseIds.includes(e.id)).sort((a,b)=>a.name.localeCompare(b.name)).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}
+      </select>
+      <div class="modal-btns">
+        <button class="btn btn-primary btn-full" onclick="confirmAddExerciseToCustom()">Lisää</button>
+        <button class="btn btn-secondary btn-full" onclick="document.querySelector('.modal-overlay').remove()">Peruuta</button>
+      </div>
+    </div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  setTimeout(() => document.getElementById('custom-add-select')?.focus(), 80);
+}
+
+function confirmAddExerciseToCustom() {
+  const exId = document.getElementById('custom-add-select')?.value?.trim();
+  if (!exId || !S.workout || !S.workout._freestyleDay) return;
+
+  if (!S.workout._freestyleDay.exerciseIds.includes(exId)) {
+    S.workout._freestyleDay.exerciseIds.push(exId);
+    wSave();
+  }
+
+  document.querySelector('.modal-overlay')?.remove();
+  render();
+}
+
+function lastWorkoutSets(exId) {
+  for (const w of DB.workouts) {
+    const s = w.sets.filter(x => x.exerciseId === exId);
+    if (s.length) return s;
+  }
+  return [];
+}
+
+function curSets(exId) {
+  if (!S.workout) return [];
+  return S.workout.sets.map((s,i) => ({...s, idx:i})).filter(s => s.exerciseId === exId);
+}
+
+function workoutDay() {
+  if (!S.workout) return null;
+  // Check for freestyle workout first
+  if (S.workout._freestyleDay) return S.workout._freestyleDay;
+  return DB.program.days.find(d => d.id === S.workout.dayId) || null;
+}
+
+function workoutExercises() {
+  const day = workoutDay();
+  if (!day) return [];
+  return day.exerciseIds.map(id => getEx(id)).filter(Boolean);
+}
+
+// ─── TIME HELPERS ─────────────────────────────────────────────────────────────
+
+function restElapsed() {
+  if (!S.workout?.sets.length) return null;
+  return Math.floor((Date.now() - S.workout.sets[S.workout.sets.length-1].ts) / 1000);
+}
+function fmtSecs(s) { return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`; }
+function fmtDur() { return !S.workout ? '' : fmtSecs(Math.floor((Date.now()-S.workout.start)/1000)); }
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return `${['Su','Ma','Ti','Ke','To','Pe','La'][d.getDay()]} ${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`;
+}
+function fmt(n) { return n % 1 === 0 ? String(n) : n.toFixed(1); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── STATS HELPERS ────────────────────────────────────────────────────────────
+
+function volHistory(exId, limit=12) {
+  const out = [];
+  for (const w of [...DB.workouts].reverse()) {
+    const s = w.sets.filter(x => x.exerciseId === exId);
+    if (!s.length) continue;
+    const d = new Date(w.date);
+    out.push({ lbl:`${d.getDate()}.${d.getMonth()+1}`, vol: s.reduce((a,x)=>a+x.weight*x.reps,0) });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+function getPRs(exId) {
+  let bw=0,brAtBw=0,b1rm=0;
+  for (const w of DB.workouts)
+    for (const s of w.sets.filter(x=>x.exerciseId===exId)) {
+      if (s.weight > bw) { bw = s.weight; brAtBw = s.reps; }
+      else if (s.weight === bw && s.reps > brAtBw) brAtBw = s.reps;
+      const e1 = s.reps===1 ? s.weight : Math.round(s.weight*(1+s.reps/30));
+      if (e1 > b1rm) b1rm = e1;
+    }
+  return { bw, brAtBw, b1rm };
+}
+
+function weeklyVol() {
+  const weeks = {};
+  DB.workouts.forEach(w => {
+    const d = new Date(w.date), dow = d.getDay();
+    const mon = new Date(d); mon.setDate(d.getDate()-((dow+6)%7));
+    const k = mon.toISOString().slice(0,10);
+    if (!weeks[k]) weeks[k] = { lbl:`${mon.getDate()}.${mon.getMonth()+1}`, vol:0 };
+    w.sets.forEach(s => { weeks[k].vol += s.weight * s.reps; });
+  });
+  return Object.entries(weeks).sort(([a],[b])=>a<b?-1:1).map(([,v])=>v).slice(-10);
+}
+
+function workoutDays() {
+  const s = new Set();
+  DB.workouts.forEach(w => { const d=new Date(w.date); s.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`); });
+  return s;
+}
+
+function calcStreak() {
+  if (!DB.workouts.length) return 0;
+  const wd = workoutDays();
+  let streak = 0;
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i = 0; i < 1000; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    if (wd.has(k)) streak++;
+    else if (i > 0) break;
+  }
+  return streak;
+}
+
+// ─── VIEW: WORKOUT ─────────────────────────────────────────────────────────────
+
+function vWorkout() {
+  return S.workout ? vWorkoutActive() : vWorkoutIdle();
+}
+
+function vWorkoutIdle() {
+  const days = DB.program.days;
+  if (!days.length) return `
+    <div class="view-hd"><h1>Treeni</h1></div>
+    <div class="empty">
+      <div class="empty-ico">🏋️</div>
+      <div class="empty-txt">Luo ensin ohjelma<br>Ohjelma-välilehdeltä</div>
+    </div>`;
+
+  const ws = DB.workouts;
+
+  return `
+    <div class="view-hd"><h1>Treeni</h1></div>
+    <div class="sec-lbl">Ohjelma</div>
+    ${days.map(day => {
+      const exs = day.exerciseIds.map(id=>getEx(id)).filter(Boolean);
+      const hasEx = exs.length > 0;
+      return `
+        <div class="day-start-card ${hasEx?'has-ex':''}" onclick="${hasEx?`confirmStartWorkout('${day.id}')`:''}" style="${!hasEx?'cursor:default;opacity:.5':''}">
+          <div style="flex:1;min-width:0">
+            <div class="day-start-name">${esc(day.name)}</div>
+            <div class="day-start-exs">${
+              hasEx
+                ? exs.map(e=>`<span style="color:${CAT_CLR[e.cat]||'#909090'}">${esc(e.name)}</span>`).join(' &middot; ')
+                : 'Ei harjoitteita — lisää Ohjelma-välilehdeltä'
+            }</div>
+          </div>
+          ${hasEx ? `<svg class="day-start-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>` : ''}
+        </div>`;
+    }).join('')}
+
+    <div class="sec-lbl" style="margin-top:14px">Custom</div>
+    <div class="day-start-card has-ex" onclick="startCustomWorkout()">
+      <div style="flex:1;min-width:0">
+        <div class="day-start-name">✦ Custom</div>
+        <div class="day-start-exs">Vapaa treeni — lisää liikkeet matkalla</div>
+      </div>
+      <svg class="day-start-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+
+    <div class="sec-lbl" style="margin-top:20px">Treenihistoria</div>
+    ${ws.length === 0 ? `
+      <div style="padding:20px 16px;text-align:center;color:var(--text3);font-size:14px">Ei vielä treenejä</div>
+    ` : ws.map((w,idx) => {
+      const vol = Math.round(w.sets.reduce((a,s)=>a+s.weight*s.reps,0));
+      const exIds = [...new Set(w.sets.map(s=>s.exerciseId))];
+      const dayName = DB.program.days.find(d=>d.id===w.dayId)?.name || '';
+      const isOpen = S.histOpen === w.id;
+      return `
+        <div class="hist-item" style="margin:0 16px 12px;">
+          <div class="hist-head" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="toggleHist('${w.id}')">
+            <div style="flex:1">
+              <div class="hist-date">${fmtDate(w.date)}${dayName?` <span style="color:var(--accent);font-size:13px;font-weight:600">${esc(dayName)}</span>`:''}</div>
+              <div class="hist-meta">${w.dur} min · ${vol.toLocaleString('fi')} kg · ${exIds.length} harjoitetta</div>
+            </div>
+            <svg class="hist-chevron" style="transform:rotate(${isOpen ? '180' : '0'}deg)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+          ${isOpen ? `
+          <div class="hist-body">
+              ${exIds.map(id => {
+                const ex=getEx(id);
+                const ss=w.sets.filter(s=>s.exerciseId===id);
+                const exVol=Math.round(ss.reduce((a,s)=>a+s.weight*s.reps,0));
+                return `
+                  <div class="hist-ex-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <div style="flex:1">
+                      <span style="color:var(--accent);font-weight:600">${ex?esc(ex.name):'(poistettu)'}</span>&nbsp;<span style="color:var(--text3);font-weight:400">${exVol} kg</span>
+                    </div>
+                    <div style="display:flex;gap:4px;flex-shrink:0">
+                      <button class="icon-btn" style="width:28px;height:28px;background:#ff453a15;color:var(--danger)" onclick="askDelHistEx('${w.id}','${id}')" title="Poista liike">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v5M14 11v5M9 6V4h6v2"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div style="display:contents">${ss.map((s,i)=>{
+                    const setKey = `${w.id}:${i}`;
+                    return `<div class="hist-set" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;gap:8px">
+                      <div style="flex:1">Sarja ${i+1}: ${fmt(s.weight)} kg × ${s.reps} toistoa${s.comment ? ` · ${esc(s.comment)}` : ''}</div>
+                      <div style="display:flex;gap:4px;flex-shrink:0">
+                        <button class="icon-btn" style="width:28px;height:28px;background:#e8e8e815;color:var(--accent)" onclick="askEditHistSet('${w.id}',${i})" title="Muokkaa">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button class="icon-btn" style="width:28px;height:28px;background:#ff453a15;color:var(--danger)" onclick="askDelHistSet('${w.id}',${i})" title="Poista">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v5M14 11v5M9 6V4h6v2"/></svg>
+                        </button>
+                      </div>
+                    </div>`;
+                  }).join('')}</div>`;
+              }).join('')}
+          </div>` : ''}
+        </div>`;
+    }).join('')}
+    <div style="height:20px"></div>`;
+}
+
+function vWorkoutActive() {
+  const exs = workoutExercises();
+  // Sort: not done first, then done
+  const sorted = exs.sort((a,b) => (S.doneExs.has(b.id)?-1:1) - (S.doneExs.has(a.id)?-1:1));
+  const day = workoutDay();
+  const rest = restElapsed();
+  const rCls = rest===null?'g':rest<90?'g':rest<180?'y':'r';
+  const isCustom = S.workout?._freestyleDay !== undefined;
+
+  return `
+    <div class="w-top">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="w-dur" id="w-dur">⏱ ${fmtDur()}</span>
+        ${day ? `<span class="w-day-badge">${esc(day.name)}</span>` : ''}
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="askEndWorkout()">Lopeta</button>
+    </div>
+    ${rest !== null ? `
+      <div id="rest-wrap">
+        <div class="rest-lbl">Taukoaika</div>
+        <div class="rest-val ${rCls}" id="rest-val">${fmtSecs(rest)}</div>
+        <div class="rest-sub" id="rest-sub">${restLabel(rest)}</div>
+      </div>` : `<div style="height:8px"></div>`}
+    ${isCustom ? `
+      <div style="padding:0 12px 12px">
+        <button class="btn btn-secondary btn-full btn-sm" onclick="addExerciseToCustom()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Lisää liike
+        </button>
+      </div>` : ''}
+    ${sorted.length ? sorted.map(ex => exCard(ex)).join('') : ''}
+    ${!sorted.length && !isCustom ? `
+      <div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Tällä päivällä ei ole harjoitteita</div></div>` : ''}
+    <div style="height:24px"></div>`;
+}
+
+function restLabel(r) {
+  return r<60?'Hyvä tempo 🔥':r<120?'Sopiva tauko 💪':r<180?'Pitkä tauko ⏳':'Valmis? 👀';
+}
+
+function exCard(ex) {
+  const sets = curSets(ex.id);
+  const lastSets = lastWorkoutSets(ex.id);
+  const isAdding = S.addSetFor === ex.id;
+  const draft = S.drafts[ex.id] || {};
+  const isDone = S.doneExs.has(ex.id);
+
+  // Pre-fill: weight from last set added TODAY, reps ALWAYS empty
+  const nextIdx = sets.length;
+  const lastSetToday = sets[sets.length - 1];
+  const refSetLastWorkout = lastSets[nextIdx] ?? lastSets[lastSets.length - 1];
+
+  const dw = draft.weight !== undefined ? draft.weight : (lastSetToday?.weight ?? refSetLastWorkout?.weight ?? '');
+  const dr = ''; // Always empty - user enters reps fresh
+  const clr = CAT_CLR[ex.cat]||'#909090';
+  return `
+    <div class="ex-card fade-in" style="${isDone?'background:#252525;opacity:0.6;pointer-events:none;':''}" ${isDone?'data-done=1':''}>
+      <div class="ex-head">
+        <div style="flex:1;min-width:0">
+          <div class="ex-name" style="${isDone?'color:#606060;text-decoration:line-through;':''}">${esc(ex.name)}</div>
+        </div>
+        ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}20;color:${isDone?'#606060':clr};flex-shrink:0;">${esc(ex.cat)}</span>` : ''}
+        ${isDone ? `
+          <button class="btn btn-danger btn-sm" style="font-size:11px;flex-shrink:0;opacity:1;pointer-events:auto;" onclick="markExDone('${ex.id}')">✕ Palauta</button>` : `
+          <button class="btn btn-success btn-sm" style="font-size:11px;flex-shrink:0" onclick="markExDone('${ex.id}')">✓ Valmis</button>`}
+      </div>
+
+      ${lastSets.length ? `
+        <div style="padding:0 16px 10px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;font-weight:600;margin-bottom:5px">Viime kerta</div>
+          ${lastSets.map((s,i) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0">
+              <span style="font-size:12px;color:var(--text3)">Sarja ${i+1}</span>
+              <span style="font-size:13px;font-weight:600;color:var(--text2)">${fmt(s.weight)}&thinsp;kg &times; ${s.reps}&thinsp;toistoa</span>
+            </div>`).join('')}
+        </div>` : `
+        <div style="padding:0 16px 10px;font-size:12px;color:var(--text3)">Ensimmäinen kerta</div>`}
+
+      ${sets.length ? `
+        <div class="sets-list">
+          <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.7px;font-weight:600;padding:6px 0 4px;border-top:1px solid var(--border)">Tänään</div>
+          ${sets.map((s,li) => `
+            <div class="set-row">
+              <span class="set-num">${li+1}</span>
+              <div style="flex:1">
+                <div class="set-info">${fmt(s.weight)}&thinsp;kg &times; ${s.reps}&thinsp;toistoa</div>
+                ${s.comment ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(s.comment)}</div>` : ''}
+              </div>
+              <button class="set-del" onclick="delSet(${s.idx})">✕</button>
+            </div>`).join('')}
+        </div>` : ''}
+
+      ${isAdding ? `
+        <div class="add-form">
+          <div class="add-form-inner">
+            ${refSetLastWorkout ? `
+              <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:10px;padding:6px 8px;background:#ffffff08;border-radius:7px">
+                Sarja ${nextIdx+1} viime kerralla:&ensp;<strong style="color:var(--text2)">${fmt(refSetLastWorkout.weight)}&thinsp;kg &times; ${refSetLastWorkout.reps}&thinsp;toistoa</strong>
+              </div>` : ''}
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-lbl">Paino (kg)</div>
+                <input type="number" id="w-${ex.id}" class="input"
+                  value="${esc(dw)}" step="0.5" min="0" inputmode="decimal"
+                  style="font-size:24px;font-weight:700;text-align:center;padding:10px 6px"
+                  oninput="draftChange('${ex.id}','weight',this.value)">
+              </div>
+              <div class="form-col">
+                <div class="form-lbl">Toistot</div>
+                <input type="number" id="r-${ex.id}" class="input"
+                  value="${esc(dr)}" step="1" min="1" inputmode="numeric"
+                  style="font-size:24px;font-weight:700;text-align:center;padding:10px 6px"
+                  oninput="draftChange('${ex.id}','reps',this.value)">
+              </div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div class="form-lbl">Kommentti (valinnainen)</div>
+              <input type="text" id="c-${ex.id}" class="input"
+                placeholder="Esim. RPE 8, loukkaantunut jne" maxlength="50"
+                style="font-size:13px;padding:8px 10px"
+                oninput="draftChange('${ex.id}','comment',this.value)">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary" style="flex:1" onclick="submitSet('${ex.id}')">✓ Kirjaa</button>
+              <button class="btn btn-secondary btn-sm" onclick="cancelAdd()">Peruuta</button>
+            </div>
+          </div>
+        </div>` : `
+        <div class="add-btn-row">
+          <button class="btn btn-secondary btn-full btn-sm" onclick="openAdd('${ex.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Lisää sarja
+          </button>
+        </div>`}
+    </div>`;
+}
+
+// ─── VIEW: PROGRAM ────────────────────────────────────────────────────────────
+
+function vProgram() {
+  const days = DB.program.days;
+  const n = days.length;
+  const di = Math.min(S.progDayIdx, n-1);
+  const day = days[di] || null;
+  const exs = dayExercises(di);
+
+  return `
+    <div class="view-hd"><h1>Ohjelma</h1></div>
+
+    <div class="sec-lbl">Jakoisuus</div>
+    <div class="split-row">
+      ${[1,2,3,4,5,6].map(i => `
+        <button class="split-pill ${n===i?'active':''}" onclick="setSplitCount(${i})">
+          ${i}-jak.
+        </button>`).join('')}
+    </div>
+
+    ${n === 0 ? `
+      <div class="empty">
+        <div class="empty-ico">📋</div>
+        <div class="empty-txt">Valitse jakoisuus ylhäältä</div>
+      </div>` : `
+
+      <div class="day-tabs">
+        ${days.map((d,i) => `
+          <button class="day-tab ${i===di?'active':''}" onclick="selProgDay(${i})">${esc(d.name)}</button>
+        `).join('')}
+      </div>
+
+      <div style="height:14px"></div>
+
+      ${exs.length ? `
+        <div class="list-wrap fade-in">
+          ${exs.map((ex,i) => {
+            const isRenaming = S.renamingEx === ex.id;
+            const clr = CAT_CLR[ex.cat]||'#909090';
+            return `
+              <div class="list-item">
+                ${S.editMode ? `
+                  <div class="order-btns">
+                    <button class="order-btn" onclick="moveExInDay('${ex.id}',-1,${di})" ${i===0?'disabled':''}>▲</button>
+                    <button class="order-btn" onclick="moveExInDay('${ex.id}',1,${di})" ${i===exs.length-1?'disabled':''}>▼</button>
+                  </div>` : ''}
+                ${ex.cat !== 'Muu' ? `<span class="badge" style="background:${clr}22;color:${clr};flex-shrink:0">${esc(ex.cat)}</span>` : ''}
+                ${isRenaming ? `
+                  <input type="text" id="rename-${ex.id}" class="input" style="flex:1;font-size:14px;padding:6px 10px"
+                    value="${esc(ex.name)}" maxlength="40" autofocus
+                    onblur="submitRename('${ex.id}')"
+                    onkeydown="if(event.key==='Enter')submitRename('${ex.id}');if(event.key==='Escape'){S.renamingEx=null;render();}">
+                ` : `
+                  <span class="list-name" onclick="startRename('${ex.id}')" style="cursor:pointer;padding:2px 4px;border-radius:4px;transition:background .15s" onmouseover="this.style.background='#ffffff08'" onmouseout="this.style.background=''">
+                    ${esc(ex.name)}
+                  </span>`}
+                <button class="icon-btn" style="background:#e8e8e815;color:var(--accent)" onclick="askSwapExInDay('${ex.id}',${di})" title="Korvaa harjoitteella">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64M3.51 15A9 9 0 0 0 18.36 18.36"/></svg>
+                </button>
+                <button class="icon-btn" style="background:#ff453a15;color:var(--danger)" onclick="askRemoveExFromDay('${ex.id}',${di})">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v5M14 11v5M9 6V4h6v2"/></svg>
+                </button>
+              </div>`;
+          }).join('')}
+        </div>
+        <div style="padding:0 16px 4px;display:flex;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="toggleEdit()" style="font-size:12px">
+            ${S.editMode ? '✓ Valmis' : '↕ Järjestä'}
+          </button>
+        </div>` : `
+        <div class="empty" style="padding:32px 32px">
+          <div class="empty-ico" style="font-size:32px">➕</div>
+          <div class="empty-txt" style="font-size:14px">Lisää harjoitteita päivälle</div>
+        </div>`}
+
+      ${S.addExForm ? `
+        <div class="card fade-in">
+          <div style="font-size:15px;font-weight:600;margin-bottom:12px">Lisää harjoite — ${day ? esc(day.name) : ''}</div>
+          <select id="ex-select" class="input" style="margin-bottom:14px" autofocus>
+            <option value="">Valitse harjoite...</option>
+            ${DB.exercises.filter(e => !day?.exerciseIds.includes(e.id)).sort((a,b) => a.name.localeCompare(b.name)).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}
+          </select>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="flex:1" onclick="submitExFromLibrary(${di})">Lisää</button>
+            <button class="btn btn-secondary" onclick="toggleAddEx()">Peruuta</button>
+          </div>
+        </div>` : `
+        <div style="padding:0 16px">
+          <button class="btn btn-secondary btn-full" onclick="toggleAddEx()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Lisää harjoite — ${day ? esc(day.name) : ''}
+          </button>
+        </div>`}
+    `}
+    <div style="height:24px"></div>`;
+}
+
+// ─── VIEW: STATS ──────────────────────────────────────────────────────────────
+
+function vStats() {
+  if (!DB.workouts.length) return `
+    <div class="view-hd"><h1>Tilastot</h1></div>
+    <div class="empty">
+      <div class="empty-ico">📊</div>
+      <div class="empty-txt">Treenaa ensin,<br>tilastot ilmestyvät tähän!</div>
+    </div>`;
+
+  const wv = weeklyVol();
+  const totalVol = Math.round(DB.workouts.reduce((a,w)=>a+w.sets.reduce((b,s)=>b+s.weight*s.reps,0),0));
+  const totalDur = DB.workouts.reduce((a,w)=>a+w.dur,0);
+  const avgDur = Math.round(totalDur / DB.workouts.length);
+  const avgVol = Math.round(totalVol / DB.workouts.length);
+  const firstWorkout = DB.workouts[DB.workouts.length-1]?.date || Date.now();
+  const daysSinceStart = Math.max(1, Math.floor((Date.now() - firstWorkout) / (1000*60*60*24)));
+  const workoutsPerWeek = (DB.workouts.length * 7 / daysSinceStart).toFixed(1);
+
+  return `
+    <div class="view-hd"><h1>Tilastot</h1></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 12px">
+      <div style="background:var(--surface);border-radius:var(--r);padding:14px;text-align:center;border:1px solid rgba(255,0,110,0.3);box-shadow:0 0 18px rgba(255,0,110,0.15)">
+        <div style="font-size:26px;font-weight:700;color:var(--accent);text-shadow:0 0 15px rgba(255,0,110,0.6)">${DB.workouts.length}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">treenikertaa</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--r);padding:14px;text-align:center;border:1px solid rgba(255,0,110,0.3);box-shadow:0 0 18px rgba(255,0,110,0.15)">
+        <div style="font-size:26px;font-weight:700;color:var(--accent);text-shadow:0 0 15px rgba(255,0,110,0.6)">${(totalVol/1000).toFixed(1)}t</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">volyymi yhteensä</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Treenisessiot</div>
+      <div class="pr-row"><span class="pr-lbl">Keskimääräinen kesto</span><span class="pr-val">${avgDur} min</span></div>
+      <div class="pr-row"><span class="pr-lbl">Yhteensä treeniä</span><span class="pr-val">${Math.floor(totalDur/60)}h ${totalDur%60}min</span></div>
+      <div class="pr-row"><span class="pr-lbl">Treenejä viikossa (keskiarvo)</span><span class="pr-val">${workoutsPerWeek}</span></div>
+      <div class="pr-row"><span class="pr-lbl">Keskimääräinen volyymi</span><span class="pr-val">${(avgVol/1000).toFixed(1)}t</span></div>
+    </div>
+    ${wv.length>=2 ? `
+      <div class="stat-card">
+        <div class="stat-title">Viikkovolyymi (kg)</div>
+        <div id="wc" style="height:200px"></div>
+      </div>` : ''}
+    <div class="stat-card">
+      <div class="stat-title">📅 Treenipäivät</div>
+      <div id="calendar-container"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">🔥 Harjoitteittainen volyymi (Top 8)</div>
+      <div id="pie-chart" style="height:280px"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">💪 Volyymi viikonpäivittäin</div>
+      <div id="dow-chart" style="height:240px"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">🔥 Workout Streak</div>
+      <div style="padding:20px;text-align:center">
+        <div style="font-size:48px;font-weight:700;color:var(--success);text-shadow:0 0 25px rgba(0,255,65,0.7)">${calcStreak()}</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:8px">päivää peräkkäin</div>
+      </div>
+    </div>
+    <div style="height:20px"></div>`;
+}
+
+// ─── VIEW: EXERCISES ──────────────────────────────────────────────────────────
+
+function vExercises() {
+  const exs = DB.exercises;
+  const selId = S.statsEx || (exs.length > 0 ? exs[0].id : null);
+  const sel = getEx(selId);
+
+  return `
+    <div class="view-hd"><h1>Liikkeet</h1></div>
+    ${exs.length ? `
+      <div style="padding:16px">
+        <select class="input" onchange="selExerciseDetail(this.value)" style="font-size:18px;padding:16px 14px;margin-bottom:0">
+          ${exs.sort((a,b) => a.name.localeCompare(b.name)).map(e => `<option value="${e.id}" ${e.id === selId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}
+        </select>
+      </div>` : ''}
+    ${S.addExForm ? `
+      <div class="card fade-in" style="margin:0 16px 12px">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Luo uusi harjoite</div>
+        <input type="text" id="ex-lib-name" class="input" placeholder="Esim. Penkkipunnerrus" maxlength="40" style="margin-bottom:14px" autofocus>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="submitExerciseLib()">Luo</button>
+          <button class="btn btn-secondary" onclick="toggleAddExercise()">Peruuta</button>
+        </div>
+      </div>` : `
+      <div style="padding:0 16px 14px">
+        <button class="btn btn-secondary btn-full" onclick="openAddExercise()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Luo harjoite
+        </button>
+      </div>`}
+    ${!exs.length ? `
+      <div class="empty">
+        <div class="empty-ico">➕</div>
+        <div class="empty-txt">Luo ensimmäinen harjoite</div>
+      </div>` : sel ? `
+      <div class="fade-in">
+        <div class="card" style="margin:0 16px 12px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <div style="flex:1">
+              <div style="font-size:18px;font-weight:700">${esc(sel.name)}</div>
+              ${sel.cat !== 'Muu' ? `<span class="badge" style="background:${CAT_CLR[sel.cat]}22;color:${CAT_CLR[sel.cat]};margin-top:6px">${esc(sel.cat)}</span>` : ''}
+            </div>
+          </div>
+          ${(() => {
+            const prs = getPRs(sel.id);
+            const hist = volHistory(sel.id);
+            const wo = DB.workouts.filter(w => w.sets.some(s => s.exerciseId === sel.id));
+            return `
+              <div style="border-top:1px solid var(--border);padding-top:12px">
+                <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Tilastot</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                  <div style="background:var(--surface2);border:1px solid rgba(255,0,110,0.2);border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Paras paino</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(255,0,110,0.5)">${prs.bw > 0 ? fmt(prs.bw) + ' kg' : '—'}</div>
+                  </div>
+                  <div style="background:var(--surface2);border:1px solid rgba(255,0,110,0.2);border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">1RM arvio</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(255,0,110,0.5)">${prs.b1rm > 0 ? '~' + prs.b1rm + ' kg' : '—'}</div>
+                  </div>
+                  <div style="background:var(--surface2);border:1px solid rgba(255,0,110,0.2);border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Toistot (paras paino)</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(255,0,110,0.5)">${prs.brAtBw > 0 ? prs.brAtBw + ' kpl' : '—'}</div>
+                  </div>
+                  <div style="background:var(--surface2);border:1px solid rgba(255,0,110,0.2);border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Harjoituskerrat</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 12px rgba(255,0,110,0.5)">${wo.length}</div>
+                  </div>
+                </div>
+              </div>
+              ${hist.length >= 2 ? `
+                <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
+                  <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Volyymi-historia (kg)</div>
+                  <div id="ex-chart" style="height:260px"></div>
+                </div>` : ''}
+              ${(() => {
+                const allSets = [];
+                DB.workouts.forEach(w => {
+                  w.sets.forEach(s => {
+                    if (s.exerciseId === sel.id) allSets.push({w: s.weight, r: s.reps});
+                  });
+                });
+                return allSets.length >= 3 ? `
+                  <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
+                    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Paino vs. Toistot</div>
+                    <div id="scatter-${sel.id}" style="height:240px"></div>
+                  </div>` : '';
+              })()}
+            `;
+          })()}
+        </div>
+        <div class="card" style="margin:0 16px 12px">
+          <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Muokkaa nimeä</div>
+          <input type="text" id="ex-edit-name" class="input" value="${esc(sel.name)}" maxlength="40" placeholder="Harjoitteen nimi" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')saveExerciseEdits('${sel.id}')">
+          <button class="btn btn-secondary btn-sm btn-full" onclick="saveExerciseEdits('${sel.id}')">Tallenna</button>
+        </div>
+        <div class="card" style="margin:0 16px 12px;background:#ff453a08;border:1px solid #ff453a33">
+          <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600">Vaara-alue</div>
+          <button class="btn btn-danger btn-sm btn-full" onclick="askDeleteExercise('${sel.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v5M14 11v5M9 6V4h6v2"/></svg>
+            Poista harjoite
+          </button>
+        </div>
+      </div>` : ''}
+    ${exs.length ? `<div style="padding:0 16px 14px;display:flex;gap:8px">
+      <button class="btn btn-secondary btn-full btn-sm" onclick="exportAllData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Vie
+      </button>
+      <button class="btn btn-secondary btn-full btn-sm" onclick="document.getElementById('import-file-input').click()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Tuo
+      </button>
+      <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importAllData(event)">
+    </div>` : `<div style="padding:0 16px 14px;display:flex;gap:8px">
+      <button class="btn btn-secondary btn-full btn-sm" onclick="exportAllData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Vie
+      </button>
+      <button class="btn btn-secondary btn-full btn-sm" onclick="document.getElementById('import-file-input').click()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Tuo
+      </button>
+      <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importAllData(event)">
+    </div>`}
+    <div style="height:20px"></div>`;
+}
+
+// ─── CALENDAR ─────────────────────────────────────────────────────────────────
+
+function drawInteractiveCalendar() {
+  const container = document.getElementById('calendar-container');
+  if (!container) return;
+
+  const wd = workoutDays();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Use state-tracked year/month or current
+  let year = S.calendarYear !== null ? S.calendarYear : today.getFullYear();
+  let month = S.calendarMonth !== null ? S.calendarMonth : today.getMonth();
+
+  // Month names in Finnish
+  const monthNames = ['Tammikuu','Helmikuu','Maaliskuu','Huhtikuu','Toukokuu','Kesäkuu','Heinäkuu','Elokuu','Syyskuu','Lokakuu','Marraskuu','Joulukuu'];
+  const weekdayNames = ['Su','Ma','Ti','Ke','To','Pe','La'];
+
+  // Build navigation header and month title
+  const navHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0">
+      <button class="icon-btn" style="background:var(--surface2);width:32px;height:32px" onclick="prevCalendarMonth()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <div style="text-align:center;font-weight:600;font-size:14px;min-width:120px">${monthNames[month]} ${year}</div>
+      <button class="icon-btn" style="background:var(--surface2);width:32px;height:32px" onclick="nextCalendarMonth()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  `;
+
+  // Build weekday headers
+  const weekdaysHTML = `
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;text-align:center">
+      ${weekdayNames.map(d => `<div style="font-size:10px;font-weight:600;color:var(--text3);padding:4px 0">${d}</div>`).join('')}
+    </div>
+  `;
+
+  // Get month boundaries
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDate = new Date(firstDay);
+  startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+  // Build calendar grid
+  let gridHTML = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 0">';
+  let currentDate = new Date(startDate);
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(currentDate);
+    const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const hasWorkout = wd.has(k);
+    const isCurrentMonth = d.getMonth() === month;
+
+    const bgColor = isCurrentMonth ? (hasWorkout ? '#FF006E' : '#2d1b4e') : '#12072a';
+    const textColor = isCurrentMonth ? (hasWorkout ? '#fff' : '#909090') : '#505050';
+    const cursor = hasWorkout && isCurrentMonth ? 'pointer' : 'default';
+    const fontWeight = hasWorkout ? '600' : '400';
+    const border = isCurrentMonth ? (hasWorkout ? '#FF006E' : '#4d2d7f') : '#1a0933';
+    const glow = hasWorkout && isCurrentMonth ? 'box-shadow:0 0 10px rgba(255,0,110,0.5);' : '';
+    const opacity = isCurrentMonth ? '1' : '0.4';
+
+    gridHTML += `
+      <div style="
+        aspect-ratio:1;
+        background:${bgColor};
+        border-radius:4px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:11px;
+        color:${textColor};
+        cursor:${cursor};
+        font-weight:${fontWeight};
+        border:1px solid ${border};
+        transition:all 0.15s;
+        opacity:${opacity};
+        ${glow}
+      " ${hasWorkout && isCurrentMonth ? `onmouseover="this.style.background='#FF1493';this.style.boxShadow='0 0 18px rgba(255,20,147,0.9)'" onmouseout="this.style.background='#FF006E';this.style.boxShadow='0 0 10px rgba(255,0,110,0.5)'" onclick="showWorkoutDay('${k}', new Date(${d.getTime()}))"` : ''} title="${d.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}">
+        ${d.getDate()}
+      </div>
+    `;
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  gridHTML += '</div>';
+
+  container.innerHTML = navHTML + weekdaysHTML + gridHTML;
+}
+
+function prevCalendarMonth() {
+  const today = new Date();
+  const year = S.calendarYear !== null ? S.calendarYear : today.getFullYear();
+  const month = S.calendarMonth !== null ? S.calendarMonth : today.getMonth();
+
+  let newMonth = month - 1;
+  let newYear = year;
+  if (newMonth < 0) {
+    newMonth = 11;
+    newYear--;
+  }
+
+  S.calendarYear = newYear;
+  S.calendarMonth = newMonth;
+  requestAnimationFrame(drawCharts);
+}
+
+function nextCalendarMonth() {
+  const today = new Date();
+  const year = S.calendarYear !== null ? S.calendarYear : today.getFullYear();
+  const month = S.calendarMonth !== null ? S.calendarMonth : today.getMonth();
+
+  let newMonth = month + 1;
+  let newYear = year;
+  if (newMonth > 11) {
+    newMonth = 0;
+    newYear++;
+  }
+
+  S.calendarYear = newYear;
+  S.calendarMonth = newMonth;
+  requestAnimationFrame(drawCharts);
+}
+
+function showWorkoutDay(dateKey, date) {
+  const workouts = DB.workouts.filter(w => {
+    const wd = new Date(w.date);
+    return `${wd.getFullYear()}-${wd.getMonth()}-${wd.getDate()}` === dateKey;
+  });
+
+  if (!workouts.length) return;
+
+  let content = `<div style="padding:20px">
+    <div style="font-size:18px;font-weight:700;margin-bottom:16px">${date.toLocaleDateString('fi-FI', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>`;
+
+  workouts.forEach(w => {
+    content += `<div style="margin-bottom:16px;background:var(--surface2);padding:12px;border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px">⏱ ${fmtDur.call({workout: w})}</div>`;
+
+    w.sets.forEach(s => {
+      const ex = getEx(s.exerciseId);
+      content += `<div style="font-size:12px;color:var(--text2);padding:4px 0">${ex ? ex.name : 'Tuntematon'}: ${s.weight}kg × ${s.reps}</div>`;
+    });
+
+    content += `</div>`;
+  });
+
+  content += `</div>`;
+
+  const el = document.createElement('div');
+  el.className = 'modal-overlay';
+  el.innerHTML = `<div class="modal-sheet" style="max-height:80vh;overflow-y:auto">${content}</div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+}
+
+function drawCharts() {
+  if (S.view!=='stats') return;
+  const wv=weeklyVol();
+
+  // Weekly volume chart
+  if(wv.length>=2) {
+    const el=document.getElementById('wc');
+    if(el) {
+      const chart=echarts.init(el);
+      chart.setOption({
+        responsive:true,
+        grid:{left:40,right:20,top:10,bottom:30},
+        xAxis:{type:'category',data:wv.map(d=>d.lbl),axisLabel:{fontSize:11,color:'#909090'},axisLine:{lineStyle:{color:'#4d2d7f'}},splitLine:{lineStyle:{color:'#2d1b4e'}}},
+        yAxis:{type:'value',axisLabel:{fontSize:11,color:'#909090'},axisLine:{lineStyle:{color:'#4d2d7f'}},splitLine:{lineStyle:{color:'#2d1b4e'}}},
+        series:[{data:wv.map(d=>d.vol),type:'bar',itemStyle:{color:'#FF006E',borderRadius:[4,4,0,0]},barMaxWidth:40}],
+        tooltip:{backgroundColor:'rgba(15,4,21,0.95)',borderColor:'#FF006E',textStyle:{color:'#fff'}},
+        animation:true
+      });
+      setTimeout(()=>chart.resize(),0);
+    }
+  }
+
+  // Exercise pie chart
+  const exBreak={}; DB.workouts.forEach(w=>{
+    w.sets.forEach(s=>{
+      const ex=getEx(s.exerciseId);
+      if(ex) exBreak[ex.name]=(exBreak[ex.name]||0)+s.weight*s.reps;
+    });
+  });
+  const pieData=Object.entries(exBreak).map(([k,v])=>({name:k,value:Math.round(v)})).sort((a,b)=>b.value-a.value);
+  if(pieData.length>0) {
+    const el=document.getElementById('pie-chart');
+    if(el) {
+      const chart=echarts.init(el);
+      const colors=Object.values(CAT_CLR);
+      chart.setOption({
+        responsive:true,
+        series:[{
+          name:'Volyymi',
+          type:'pie',
+          radius:['20%','70%'],
+          data:pieData,
+          itemStyle:{borderColor:'#000000',borderWidth:2},
+          label:{fontSize:11,color:'#fff'}
+        }],
+        tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#FF006E',textStyle:{color:'#fff'}},
+        color:colors,
+        animation:true
+      });
+      setTimeout(()=>chart.resize(),0);
+    }
+  }
+
+  // Day of week
+  const dowVol={};
+  DB.workouts.forEach(w=>{
+    const d=new Date(w.date).getDay();
+    const dn=['Su','Ma','Ti','Ke','To','Pe','La'][d];
+    dowVol[dn]=(dowVol[dn]||0)+w.sets.reduce((a,s)=>a+s.weight*s.reps,0);
+  });
+  const dowData=['Ma','Ti','Ke','To','Pe','La','Su'].map(d=>({name:d,value:Math.round(dowVol[d]||0)}));
+  if(dowData.some(d=>d.value>0)) {
+    const el=document.getElementById('dow-chart');
+    if(el) {
+      const chart=echarts.init(el);
+      chart.setOption({
+        responsive:true,
+        grid:{left:40,right:20,top:10,bottom:30},
+        xAxis:{type:'category',data:dowData.map(d=>d.name),axisLabel:{fontSize:11,color:'#909090'},axisLine:{lineStyle:{color:'#4d2d7f'}},splitLine:{lineStyle:{color:'#2d1b4e'}}},
+        yAxis:{type:'value',axisLabel:{fontSize:11,color:'#909090'},axisLine:{lineStyle:{color:'#4d2d7f'}},splitLine:{lineStyle:{color:'#2d1b4e'}}},
+        series:[{data:dowData.map(d=>d.value),type:'bar',itemStyle:{color:'#00FF41',borderRadius:[4,4,0,0]},barMaxWidth:40}],
+        tooltip:{backgroundColor:'rgba(15,4,21,0.95)',borderColor:'#00FF41',textStyle:{color:'#fff'}},
+        animation:true
+      });
+      setTimeout(()=>chart.resize(),0);
+    }
+  }
+
+  // Draw interactive calendar
+  drawInteractiveCalendar();
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+
+function showModal(title, sub, onOk, okTxt='Kyllä', cancelTxt='Peruuta', danger=false) {
+  const el=document.createElement('div'); el.className='modal-overlay';
+  el.innerHTML=`
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">${esc(title)}</div>
+      <div class="modal-sub">${esc(sub)}</div>
+      <div class="modal-btns">
+        <button class="btn ${danger?'btn-danger':'btn-primary'} btn-full" id="mok">${esc(okTxt)}</button>
+        <button class="btn btn-secondary btn-full" id="mcancel">${esc(cancelTxt)}</button>
+      </div>
+    </div>`;
+  document.getElementById('app').appendChild(el);
+  el.querySelector('#mok').onclick=()=>{el.remove();onOk();};
+  el.querySelector('#mcancel').onclick=()=>el.remove();
+  el.addEventListener('click',e=>{if(e.target===el)el.remove();});
+}
+
+// ─── DATA EXPORT/IMPORT ───────────────────────────────────────────────────────
+
+function exportAllData() {
+  const data = {
+    version: 1,
+    exported: new Date().toISOString(),
+    exercises: DB.exercises,
+    program: DB.program,
+    workouts: DB.workouts
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kehonrakennus-backup-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importAllData(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const content = e.target?.result;
+      if (typeof content !== 'string') return;
+
+      const data = JSON.parse(content);
+      if (!data.exercises || !data.program || !data.workouts) {
+        alert('❌ Virhe: Tiedosto ei ole kelvollinen backup!');
+        return;
+      }
+
+      showModal(
+        'Tuo tiedosto?',
+        `Korvataanko kaikki data (${data.exercises.length} liikettä, ${data.workouts.length} treeniä)?`,
+        () => {
+          DB.exercises = data.exercises;
+          DB.program = data.program;
+          DB.workouts = data.workouts;
+          dbSave();
+          render();
+          alert('✅ Tiedot tuotu onnistuneesti!');
+        },
+        'Tuo', 'Peruuta'
+      );
+    } catch(err) {
+      alert('❌ Virhe: Tiedoston lukeminen epäonnistui!');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────────────────────────
+
+function nav(view) {
+  S.view=view; S.editMode=false; S.addExForm=false; S.addSetFor=null;
+  // Reset calendar to current month when leaving stats
+  if (view !== 'stats') { S.calendarYear = null; S.calendarMonth = null; }
+  render();
+}
+
+function selProgDay(i) { S.progDayIdx=i; S.addExForm=false; S.editMode=false; render(); }
+
+function toggleEdit() { S.editMode=!S.editMode; render(); }
+
+function toggleAddEx() {
+  S.addExForm=!S.addExForm; render();
+  if (S.addExForm) setTimeout(()=>document.getElementById('ex-name')?.focus(), 80);
+}
+
+function submitEx(dayIdx) {
+  const name=document.getElementById('ex-name')?.value?.trim();
+  if (!name) { document.getElementById('ex-name')?.focus(); return; }
+  addExToDay(name, 'Muu', dayIdx); S.addExForm=false; render();
+}
+
+function submitExFromLibrary(dayIdx) {
+  const exId = document.getElementById('ex-select')?.value?.trim();
+  if (!exId) { document.getElementById('ex-select')?.focus(); return; }
+  const day = DB.program.days[dayIdx];
+  if (day && !day.exerciseIds.includes(exId)) {
+    day.exerciseIds.push(exId);
+    dbSave();
+  }
+  S.addExForm = false; render();
+}
+
+function askRemoveExFromDay(exId, dayIdx) {
+  const ex=getEx(exId); if (!ex) return;
+  showModal('Poista harjoite', `Poistetaanko "${ex.name}" tältä päivältä?`,
+    ()=>{ removeExFromDay(exId, dayIdx); render(); }, 'Poista', 'Peruuta', true);
+}
+
+function startRename(exId) {
+  S.renamingEx = exId;
+  render();
+  setTimeout(() => {
+    const el = document.getElementById(`rename-${exId}`);
+    if (el) { el.focus(); el.select(); }
+  }, 50);
+}
+
+function submitRename(exId) {
+  const newName = document.getElementById(`rename-${exId}`)?.value?.trim();
+  const ex = getEx(exId);
+  if (!newName || !ex) { S.renamingEx = null; render(); return; }
+  if (newName === ex.name) { S.renamingEx = null; render(); return; }
+  ex.name = newName;
+  dbSave();
+  S.renamingEx = null;
+  render();
+}
+
+function markExDone(exId) {
+  if (S.doneExs.has(exId)) S.doneExs.delete(exId);
+  else S.doneExs.add(exId);
+  render();
+}
+
+function openAdd(exId) {
+  S.addSetFor=exId; render();
+  setTimeout(()=>{
+    const el=document.getElementById(`w-${exId}`);
+    if (el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); el.select(); }
+  }, 60);
+}
+
+function cancelAdd() { S.addSetFor=null; render(); }
+
+function draftChange(exId, field, val) {
+  if (!S.drafts[exId]) S.drafts[exId]={};
+  S.drafts[exId][field]=val;
+}
+
+function submitSet(exId) {
+  const w=document.getElementById(`w-${exId}`)?.value;
+  const r=document.getElementById(`r-${exId}`)?.value;
+  const c=document.getElementById(`c-${exId}`)?.value?.trim() || '';
+  if (!w||!r||+w<0||+r<1) return;
+  logSet(exId, +w, +r, c);
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function askEndWorkout() {
+  const n=S.workout?.sets.length||0;
+  if (!n) { endWorkout(false); return; }
+  showModal('Lopeta treeni', `Tallennetaanko treeni? (${n} sarjaa kirjattu)`,
+    ()=>endWorkout(true), 'Tallenna', 'Hylkää');
+}
+
+function toggleHist(id) { S.histOpen=S.histOpen===id?null:id; render(); }
+function selStatsEx(id) { S.statsEx=id; render(); requestAnimationFrame(drawCharts); }
+function selExerciseDetail(id) { S.statsEx=id; render(); }
+
+function openAddExercise() {
+  S.addExForm = true; render();
+  setTimeout(() => document.getElementById('ex-lib-name')?.focus(), 80);
+}
+
+function toggleAddExercise() {
+  S.addExForm = !S.addExForm; render();
+  if (S.addExForm) setTimeout(() => document.getElementById('ex-lib-name')?.focus(), 80);
+}
+
+function submitExerciseLib() {
+  const name = document.getElementById('ex-lib-name')?.value?.trim();
+  if (!name) { document.getElementById('ex-lib-name')?.focus(); return; }
+  const ex = { id: uid(), name, cat: 'Muu' };
+  DB.exercises.push(ex);
+  dbSave();
+  S.addExForm = false;
+  render();
+}
+
+function startRenameEx(exId) {
+  S.renamingEx = exId;
+  render();
+  setTimeout(() => {
+    const el = document.getElementById(`rename-${exId}`);
+    if (el) { el.focus(); el.select(); }
+  }, 50);
+}
+
+function submitRenameEx(exId) {
+  const newName = document.getElementById(`rename-${exId}`)?.value?.trim();
+  const ex = getEx(exId);
+  if (!newName || !ex) { S.renamingEx = null; render(); return; }
+  if (newName === ex.name) { S.renamingEx = null; render(); return; }
+  ex.name = newName;
+  dbSave();
+  S.renamingEx = null;
+  render();
+}
+
+function askDeleteExercise(exId) {
+  const ex = getEx(exId);
+  if (!ex) return;
+  const workoutCount = DB.workouts.filter(w => w.sets.some(s => s.exerciseId === exId)).length;
+  const programCount = DB.program.days.filter(d => d.exerciseIds.includes(exId)).length;
+
+  let msg = `Poistetaanko "${ex.name}"?`;
+  if (workoutCount > 0 || programCount > 0) {
+    const parts = [];
+    if (programCount > 0) parts.push(`ohjelmassa ${programCount}x`);
+    if (workoutCount > 0) parts.push(`historiassa ${workoutCount}x`);
+    msg += ` (${parts.join(', ')})`;
+  }
+
+  showModal('Poista harjoite', msg,
+    () => deleteExercise(exId), 'Poista', 'Peruuta', true);
+}
+
+function deleteExercise(exId) {
+  // Remove from all program days
+  DB.program.days.forEach(day => {
+    day.exerciseIds = day.exerciseIds.filter(id => id !== exId);
+  });
+  // Remove from exercises list
+  DB.exercises = DB.exercises.filter(e => e.id !== exId);
+  S.statsEx = null;
+  dbSave();
+  render();
+}
+
+function saveExerciseEdits(exId) {
+  const name = document.getElementById('ex-edit-name')?.value?.trim();
+  if (!name) return;
+  const ex = getEx(exId);
+  if (!ex) return;
+  ex.name = name;
+  dbSave();
+  render();
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+
+function render() {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.view===S.view));
+  const c=document.getElementById('content');
+  const oldView = S._lastView;
+  S._lastView = S.view;
+  const scrollPos = c.scrollTop;
+  c.innerHTML=({workout:vWorkout,program:vProgram,stats:vStats,exercises:vExercises}[S.view]||vWorkout)();
+  // Only scroll to top when switching views, not when expanding/collapsing items
+  if (oldView !== S.view) c.scrollTop=0;
+  else c.scrollTop=scrollPos;
+  if (S.view==='stats') requestAnimationFrame(drawCharts);
+  if (S.view==='exercises') setTimeout(() => {
+    const exId = S.statsEx || (DB.exercises[0]?.id);
+    if (exId) {
+      const hist = volHistory(exId, 12);
+      if (hist.length >= 2) {
+        const el = document.getElementById('ex-chart');
+        if (el) {
+          const chart = echarts.init(el);
+          chart.setOption({
+            responsive: true,
+            grid: {left: 40, right: 20, top: 10, bottom: 30},
+            xAxis: {type: 'category', data: hist.map(d => d.lbl), axisLabel: {fontSize: 11, color: '#909090'}, axisLine: {lineStyle: {color: '#4d2d7f'}}, splitLine: {lineStyle: {color: '#2d1b4e'}}},
+            yAxis: {type: 'value', axisLabel: {fontSize: 11, color: '#909090'}, axisLine: {lineStyle: {color: '#4d2d7f'}}, splitLine: {lineStyle: {color: '#2d1b4e'}}},
+            series: [{
+              data: hist.map(d => d.vol),
+              type: 'line',
+              smooth: true,
+              itemStyle: {color: '#FF006E'},
+              areaStyle: {color: 'rgba(255, 0, 110, 0.25)'},
+              lineStyle: {width: 3, color: '#FF006E'}
+            }],
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF006E', textStyle: {color: '#fff'}},
+            animation: true
+          });
+          chart.resize();
+        }
+      }
+      // Scatter plot
+      const allSets = [];
+      DB.workouts.forEach(w => {
+        w.sets.forEach(s => {
+          if (s.exerciseId === exId) allSets.push([s.weight, s.reps]);
+        });
+      });
+      if (allSets.length >= 3) {
+        const el = document.getElementById(`scatter-${exId}`);
+        if (el) {
+          const chart = echarts.init(el);
+          chart.setOption({
+            responsive: true,
+            grid: {left: 40, right: 20, top: 10, bottom: 30},
+            xAxis: {type: 'value', name: 'Paino (kg)', nameTextStyle: {fontSize: 11, color: '#909090'}, axisLabel: {fontSize: 11, color: '#909090'}, axisLine: {lineStyle: {color: '#4d2d7f'}}, splitLine: {lineStyle: {color: '#2d1b4e'}}},
+            yAxis: {type: 'value', name: 'Toistot', nameTextStyle: {fontSize: 11, color: '#909090'}, axisLabel: {fontSize: 11, color: '#909090'}, axisLine: {lineStyle: {color: '#4d2d7f'}}, splitLine: {lineStyle: {color: '#2d1b4e'}}},
+            series: [{
+              data: allSets,
+              type: 'scatter',
+              symbolSize: 14,
+              itemStyle: {color: '#FF006E', opacity: 0.9},
+              emphasis: {itemStyle: {color: '#00D9FF', borderColor: '#fff', borderWidth: 2}}
+            }],
+            tooltip: {backgroundColor: 'rgba(0,0,0,0.9)', borderColor: '#FF006E', textStyle: {color: '#fff'}, formatter: '{c}'},
+            animation: true
+          });
+          chart.resize();
+        }
+      }
+    }
+  }, 50);
+}
+
+// ─── LIVE TIMER ───────────────────────────────────────────────────────────────
+
+function tick() {
+  if (S.view!=='workout'||!S.workout) return;
+  const de=document.getElementById('w-dur');
+  if (de) de.textContent='⏱ '+fmtDur();
+  const rest=restElapsed(); if (rest===null) return;
+  const re=document.getElementById('rest-val');
+  if (!re) { if(S.workout.sets.length===1) render(); return; }
+  re.textContent=fmtSecs(rest);
+  re.className='rest-val '+(rest<90?'g':rest<180?'y':'r');
+  const se=document.getElementById('rest-sub');
+  if (se) se.textContent=restLabel(rest);
+}
+
+// ─── KEY SHORTCUTS ────────────────────────────────────────────────────────────
+
+document.addEventListener('keydown', e=>{
+  if (e.key==='Enter') {
+    if (S.addSetFor) submitSet(S.addSetFor);
+    else if (S.addExForm) {
+      if (S.view === 'exercises') submitExerciseLib();
+      else { const di=Math.min(S.progDayIdx,DB.program.days.length-1); submitExFromLibrary(di); }
+    }
+  }
+  if (e.key==='Escape') {
+    if (S.addSetFor) cancelAdd();
+    else if (S.addExForm) { S.addExForm=false; render(); }
+  }
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+function init() {
+  dbLoad();
+
+  // Discard stale active workout (older than 3h)
+  if (S.workout && Date.now()-S.workout.start > 3*60*60*1000) {
+    S.workout=null; wSave();
+  }
+
+  render();
+  setInterval(tick, 1000);
+
+  // PWA icon + manifest
+  try {
+    const ic=document.createElement('canvas'); ic.width=ic.height=192;
+    const cx=ic.getContext('2d');
+    cx.fillStyle='#0f0415'; cx.fillRect(0,0,192,192);
+    // Draw dumbbell icon
+    cx.strokeStyle='#FF006E'; cx.lineWidth=8; cx.lineCap='round';
+    // Left weight
+    cx.fillStyle='#FF006E'; cx.fillRect(30,75,30,42); cx.fillRect(30,70,30,6);
+    // Bar
+    cx.beginPath(); cx.moveTo(65,96); cx.lineTo(127,96); cx.stroke();
+    // Right weight
+    cx.fillRect(132,75,30,42); cx.fillRect(132,70,30,6);
+    const li=document.createElement('link'); li.rel='apple-touch-icon'; li.href=ic.toDataURL();
+    document.head.appendChild(li);
+    const m={name:'Kehonrakennus',short_name:'Treeni',start_url:'./',display:'standalone',
+      background_color:'#0f0415',theme_color:'#0f0415',
+      icons:[{src:ic.toDataURL(),sizes:'192x192',type:'image/png'}]};
+    const bl=new Blob([JSON.stringify(m)],{type:'application/json'});
+    const lk=document.createElement('link'); lk.rel='manifest'; lk.href=URL.createObjectURL(bl);
+    document.head.appendChild(lk);
+  } catch(e){}
+}
+
+init();
+</script>
+</body>
+</html>
