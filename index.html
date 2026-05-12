@@ -256,6 +256,7 @@ canvas{display:block;width:100%;height:auto}
 </head>
 <body>
 <div id="app">
+  <div id="version" style="position:fixed;top:8px;right:16px;font-size:11px;color:var(--text3);z-index:100;font-weight:500">v1.0.0</div>
   <div id="content"></div>
   <nav id="tab-bar">
     <button class="tab" data-view="workout" onclick="nav('workout')">
@@ -660,6 +661,24 @@ function delHistEx(workoutId, exId) {
   render();
 }
 
+function askDelWorkout(workoutId) {
+  const workout = DB.workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+  showModal(
+    'Poista treeni',
+    `Poistetaanko treeni ${fmtDate(workout.date)}? Tätä ei voi perua.`,
+    () => delWorkout(workoutId),
+    'Poista', 'Peruuta', true
+  );
+}
+
+function delWorkout(workoutId) {
+  DB.workouts = DB.workouts.filter(w => w.id !== workoutId);
+  S.histOpen = null;
+  dbSave();
+  render();
+}
+
 function startCustomWorkout() {
   // Create a temporary freestyle day with no exercises initially
   const freestyleDay = {
@@ -911,6 +930,9 @@ function vWorkoutIdle() {
                     </div>`;
                   }).join('')}</div>`;
               }).join('')}
+              <div style="padding:14px 16px 12px;border-top:1px solid var(--border);margin-top:12px">
+                <button class="btn btn-danger btn-full btn-sm" onclick="askDelWorkout('${w.id}')">Poista treeni</button>
+              </div>
           </div>` : ''}
         </div>`;
     }).join('')}
