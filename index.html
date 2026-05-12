@@ -256,7 +256,7 @@ canvas{display:block;width:100%;height:auto}
 </head>
 <body>
 <div id="app">
-  <div id="version" style="position:fixed;top:8px;right:16px;font-size:11px;color:var(--text3);z-index:100;font-weight:500">v1.0.4</div>
+  <div id="version" style="position:fixed;top:8px;right:16px;font-size:11px;color:var(--text3);z-index:100;font-weight:500">v1.0.5</div>
   <div id="content"></div>
   <nav id="tab-bar">
     <button class="tab" data-view="workout" onclick="nav('workout')">
@@ -315,6 +315,7 @@ const S = {
   statsEx: null,
   histOpen: null,
   renamingEx: null,     // exId being renamed in program view
+  renamingDay: null,    // dayId being renamed in program view
   doneExs: new Set(),   // exerciseIds marked done in current workout
   histOpen: null,       // which workout ID is expanded in history (null = all collapsed)
   calendarYear: null,   // override calendar year (null = current year)
@@ -1129,7 +1130,7 @@ function vProgram() {
                     onblur="submitRename('${ex.id}')"
                     onkeydown="if(event.key==='Enter')submitRename('${ex.id}');if(event.key==='Escape'){S.renamingEx=null;render();}">
                 ` : `
-                  <span class="list-name" onclick="startRename('${ex.id}')" style="cursor:pointer;padding:2px 4px;border-radius:4px;transition:background .15s" onmouseover="this.style.background='#ffffff08'" onmouseout="this.style.background=''">
+                  <span class="list-name" style="padding:2px 4px">
                     ${esc(ex.name)}
                   </span>`}
                 <button class="icon-btn" style="background:#e8e8e815;color:var(--accent)" onclick="askSwapExInDay('${ex.id}',${di})" title="Korvaa harjoitteella">
@@ -1163,10 +1164,14 @@ function vProgram() {
             <button class="btn btn-secondary" onclick="toggleAddEx()">Peruuta</button>
           </div>
         </div>` : `
-        <div style="padding:0 16px">
+        <div style="padding:0 16px;display:flex;flex-direction:column;gap:8px">
           <button class="btn btn-secondary btn-full" onclick="toggleAddEx()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             Lisää harjoite — ${day ? esc(day.name) : ''}
+          </button>
+          <button class="btn btn-secondary btn-full btn-sm" onclick="openRenameDayModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Muuta ohjelman nimeä
           </button>
         </div>`}
     `}
@@ -1220,9 +1225,15 @@ function vStats() {
       <div class="stat-title">📅 Treenipäivät</div>
       <div id="calendar-container"></div>
     </div>
+    ${DB.program.days.map((day, di) => `
+      <div class="stat-card">
+        <div class="stat-title">🔥 ${esc(day.name)}</div>
+        <div id="pie-chart-day-${di}" style="height:280px"></div>
+      </div>
+    `).join('')}
     <div class="stat-card">
-      <div class="stat-title">🔥 Harjoitteittainen volyymi (Top 8)</div>
-      <div id="pie-chart" style="height:280px"></div>
+      <div class="stat-title">🔥 Kaikki ohjelmat - Top 5</div>
+      <div id="pie-chart-all" style="height:280px"></div>
     </div>
     <div class="stat-card">
       <div class="stat-title">💪 Volyymi viikonpäivittäin</div>
@@ -1540,26 +1551,61 @@ function drawCharts() {
     }
   }
 
-  // Exercise pie chart
-  const exBreak={}; DB.workouts.forEach(w=>{
-    w.sets.forEach(s=>{
-      const ex=getEx(s.exerciseId);
-      if(ex) exBreak[ex.name]=(exBreak[ex.name]||0)+s.weight*s.reps;
+  // Exercise pie chart per program day
+  DB.program.days.forEach((day, di) => {
+    const exBreak = {};
+    DB.workouts.filter(w => w.dayId === day.id).forEach(w => {
+      w.sets.forEach(s => {
+        const ex = getEx(s.exerciseId);
+        if(ex) exBreak[ex.name] = (exBreak[ex.name] || 0) + s.weight * s.reps;
+      });
+    });
+    const pieData = Object.entries(exBreak).map(([k,v]) => ({name:k,value:Math.round(v)})).sort((a,b) => b.value - a.value);
+    if(pieData.length > 0) {
+      const el = document.getElementById(`pie-chart-day-${di}`);
+      if(el) {
+        const chart = echarts.init(el);
+        const colors = Object.values(CAT_CLR);
+        chart.setOption({
+          responsive:true,
+          series:[{
+            name:'Volyymi',
+            type:'pie',
+            radius:['20%','70%'],
+            data:pieData,
+            itemStyle:{borderColor:'#000000',borderWidth:2},
+            label:{fontSize:11,color:'#fff'}
+          }],
+          tooltip:{backgroundColor:'rgba(0,0,0,0.7)',borderColor:'#FF006E',textStyle:{color:'#fff'}},
+          color:colors,
+          animation:true
+        });
+        setTimeout(()=>chart.resize(),0);
+      }
+    }
+  });
+
+  // All exercises pie chart - Top 5
+  const allExBreak = {};
+  DB.workouts.forEach(w => {
+    w.sets.forEach(s => {
+      const ex = getEx(s.exerciseId);
+      if(ex) allExBreak[ex.name] = (allExBreak[ex.name] || 0) + s.weight * s.reps;
     });
   });
-  const pieData=Object.entries(exBreak).map(([k,v])=>({name:k,value:Math.round(v)})).sort((a,b)=>b.value-a.value);
-  if(pieData.length>0) {
-    const el=document.getElementById('pie-chart');
+  const allPieData = Object.entries(allExBreak).map(([k,v]) => ({name:k,value:Math.round(v)})).sort((a,b) => b.value - a.value).slice(0, 5);
+  if(allPieData.length > 0) {
+    const el = document.getElementById('pie-chart-all');
     if(el) {
-      const chart=echarts.init(el);
-      const colors=Object.values(CAT_CLR);
+      const chart = echarts.init(el);
+      const colors = Object.values(CAT_CLR);
       chart.setOption({
         responsive:true,
         series:[{
           name:'Volyymi',
           type:'pie',
           radius:['20%','70%'],
-          data:pieData,
+          data:allPieData,
           itemStyle:{borderColor:'#000000',borderWidth:2},
           label:{fontSize:11,color:'#fff'}
         }],
@@ -1739,6 +1785,64 @@ function submitRename(exId) {
   dbSave();
   S.renamingEx = null;
   render();
+}
+
+function startRenameDay(dayId) {
+  S.renamingDay = dayId;
+  render();
+  setTimeout(() => {
+    const el = document.getElementById(`rename-day-${dayId}`);
+    if (el) { el.focus(); el.select(); }
+  }, 50);
+}
+
+function submitRenameDay(dayId) {
+  const newName = document.getElementById(`rename-day-${dayId}`)?.value?.trim();
+  const day = DB.program.days.find(d => d.id === dayId);
+  if (!newName || !day) { S.renamingDay = null; render(); return; }
+  if (newName === day.name) { S.renamingDay = null; render(); return; }
+  day.name = newName;
+  dbSave();
+  S.renamingDay = null;
+  render();
+}
+
+function openRenameDayModal() {
+  const days = DB.program.days;
+  const di = Math.min(S.progDayIdx, days.length-1);
+  const day = days[di];
+  if (!day) return;
+
+  const el = document.createElement('div');
+  el.className = 'modal-overlay';
+  el.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Muuta päivän nimeä</div>
+      <div style="padding:16px">
+        <div class="form-lbl" style="margin-bottom:8px">Uusi nimi</div>
+        <input type="text" id="day-rename-input" class="input" value="${esc(day.name)}" maxlength="30" style="font-size:14px;padding:10px;margin-bottom:12px" autofocus>
+      </div>
+      <div class="modal-btns">
+        <button class="btn btn-primary btn-full" id="day-rename-save">✓ Muuta</button>
+        <button class="btn btn-secondary btn-full" id="day-rename-cancel">Peruuta</button>
+      </div>
+    </div>`;
+  document.getElementById('app').appendChild(el);
+  el.querySelector('#day-rename-save').onclick = () => {
+    const newName = document.getElementById('day-rename-input')?.value?.trim();
+    if (!newName || newName === day.name) { el.remove(); return; }
+    day.name = newName;
+    dbSave();
+    el.remove();
+    render();
+  };
+  el.querySelector('#day-rename-cancel').onclick = () => el.remove();
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  setTimeout(() => {
+    const inp = el.querySelector('#day-rename-input');
+    if (inp) inp.select();
+  }, 50);
 }
 
 function markExDone(exId) {
